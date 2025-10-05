@@ -385,7 +385,18 @@ namespace graxl {
 		}
 
 		spdlog::debug("CoreController: Switching to Game State {}...", stateId);
+		std::shared_ptr<const GameState> oldGameStatePtr = _currentGameState.lock();
+		if (oldGameStatePtr != nullptr) {
+			spdlog::trace("CoreController: Calling onLeaveState for the previous state: {}", oldGameStatePtr->id);
+			oldGameStatePtr->onLeaveState(*oldGameStatePtr);
+		}
+		else spdlog::trace("CoreController: No previous GameState set, so no onLeaveState will be called.");
+		
 		_currentGameState = GAME_STATES[stateId];
+
+		spdlog::trace("CoreController: Calling onEnterState for the new state: {}", stateId);
+		std::shared_ptr<const GameState> newGameStatePtr = _currentGameState.lock();
+		newGameStatePtr->onEnterState(*newGameStatePtr);
 		spdlog::debug("CoreController: GameState changed to {}", stateId);
 	}
 

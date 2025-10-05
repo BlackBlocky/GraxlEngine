@@ -43,6 +43,9 @@ public:
 		bool doInput;
 
 		std::function<void(float)> updateFunction;
+
+		std::function<void(const GameState&)> onEnterState;
+		std::function<void(const GameState&)> onLeaveState;
 	};
 	void addGameState(GameState&& newGameState);
 
