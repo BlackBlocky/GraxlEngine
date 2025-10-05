@@ -252,7 +252,7 @@ namespace graxl {
 	void SceneRenderer::_drawGameObject(const GameObject& gameObject)
 	{
 		const Texture2D& drawTexture = gameObject.texture.getTexture();
-		const Rectangle& drawTextureRect = gameObject.texture.myTextureRect;
+		const Rectangle& drawTextureRect = gameObject.texture.getTextureRect();
 
 		Vector2Int goSizePixels = _calcViewportPixelSize(gameObject.size);
 		Vector2Int drawPosPixels = _calcViewportPixelPos(gameObject.position, goSizePixels);

@@ -159,8 +159,8 @@ namespace graxl {
 		__raylibInfoLogToDebug = true; // Used by the _raylibLogCallback Method
 
 		// TESTING ----
-		GameTexture tex = GameTexture(LoadTexture((std::string(ASSETS_PATH) + "textures/MagnetSnakeDown.png").c_str()), "Test-GameTexture-Player");
-		GameTexture tex2 = GameTexture(LoadTexture((std::string(ASSETS_PATH) + "textures/SpikeDown.png").c_str()), "Test-GameTexture-Spike");
+		GameTexture tex = GameTexture((std::string(ASSETS_PATH) + "textures/MagnetSnakeDown.png").c_str(), "Test-GameTexture-Player");
+		GameTexture tex2 = GameTexture((std::string(ASSETS_PATH) + "textures/SpikeDown.png").c_str(), "Test-GameTexture-Spike");
 
 		SetTextureFilter(tex.getTexture(), TEXTURE_FILTER_POINT);
 		SetTextureFilter(tex2.getTexture(), TEXTURE_FILTER_POINT);
@@ -203,7 +203,7 @@ namespace graxl {
 		//}
 
 		// Adding a test Image
-		GameTexture testImgTexture = GameTexture(LoadTexture("C:\\Users\\eliah\\Downloads\\o-FORESTS-facebook-2994683020.jpg"), "test-img-tex");
+		GameTexture testImgTexture = GameTexture("C:\\Users\\eliah\\Downloads\\o-FORESTS-facebook-2994683020.jpg", "test-img-tex");
 		GameObject testImg = GameObject(testImgTexture);
 		testImg.size = {20, 13};
 		testImg.drawOrder = -1000;
