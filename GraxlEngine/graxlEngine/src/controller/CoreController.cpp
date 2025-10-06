@@ -362,7 +362,7 @@ namespace graxl {
 
 		// Call the tickupdate on every system that active in the current game state
 		if (_currentGameState.expired() || _currentGameState.lock()->updateFunction == nullptr) return;
-		_currentGameState.lock()->updateFunction(dt);
+		_currentGameState.lock()->updateFunction(*this, dt);
 	}
 
 	void CoreController::_imGUITick(const DoubleEventBuffer& doubleEventBuffer)
@@ -405,7 +405,7 @@ namespace graxl {
 		if (oldGameStatePtr != nullptr) {
 			if (oldGameStatePtr->onLeaveState != nullptr) {
 				spdlog::trace("CoreController: Calling onLeaveState for the previous state: {}", oldGameStatePtr->id);
-				oldGameStatePtr->onLeaveState(*oldGameStatePtr);
+				oldGameStatePtr->onLeaveState(*this, *oldGameStatePtr);
 			}
 			else spdlog::trace("CoreController: Previous GameState \"{}\" has no onLeaveState function, so nothing will be called.", oldGameStatePtr->id);
 		}
@@ -416,7 +416,7 @@ namespace graxl {
 		spdlog::trace("CoreController: Calling onEnterState for the new state: {}", stateId);
 		std::shared_ptr<const GameState> newGameStatePtr = _currentGameState.lock();
 		if (newGameStatePtr->onEnterState != nullptr) {
-			newGameStatePtr->onEnterState(*newGameStatePtr);
+			newGameStatePtr->onEnterState(*this, *newGameStatePtr);
 			spdlog::debug("CoreController: GameState changed to {}", stateId);
 		}
 		else spdlog::trace("CoreController: New GameState \"{}\" has no onEnterState function, so nothing will be called.", stateId);

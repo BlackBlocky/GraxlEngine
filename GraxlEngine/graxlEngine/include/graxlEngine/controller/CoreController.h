@@ -42,10 +42,10 @@ public:
 		bool doRender;
 		bool doInput;
 
-		std::function<void(float)> updateFunction;
+		std::function<void(CoreController&, float)> updateFunction;
 
-		std::function<void(const GameState&)> onEnterState;
-		std::function<void(const GameState&)> onLeaveState;
+		std::function<void(CoreController&, const GameState&)> onEnterState;
+		std::function<void(CoreController&, const GameState&)> onLeaveState;
 	};
 	void addGameState(GameState&& newGameState);
 
