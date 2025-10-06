@@ -42,6 +42,8 @@ public:
 			_isLoaded = true;
 		}
 
+		SetTextureFilter(_myTexture, TEXTURE_FILTER_POINT); // Setting a default filter mode
+
 		// Done
 		spdlog::trace("GameTexture: Created GameTexture \"{}\" ({}x{})", name, _myTexture.width, _myTexture.height);
 	};

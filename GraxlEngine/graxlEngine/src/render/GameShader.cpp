@@ -21,7 +21,7 @@ namespace graxl {
 		}
 	}
 
-	int GameShader::loadShaderFromFile(std::string path)
+	int GameShader::loadGLSLShaderFromFile(std::string path)
 	{
 		if (c_type != GameShaderType::GLSL) {
 			spdlog::error("GameShader: Tried to load a GLSL shader on a non GLSL shader typed GameShader: {}", c_name);

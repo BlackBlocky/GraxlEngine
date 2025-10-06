@@ -69,7 +69,7 @@ public:
 	// Methods etc.
 
 	// Returns: 0=Succes, 1=UnkownError, 2=FileNotFound, 3=NoAllowed
-	int loadShaderFromFile(std::string path);
+	int loadGLSLShaderFromFile(std::string path);
 	void unloadGameShader();
 
 	const std::optional<Shader>& getShader() const;

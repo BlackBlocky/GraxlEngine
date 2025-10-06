@@ -192,7 +192,7 @@ namespace graxl {
 		_currentScene->gameObjects.push_back(std::make_unique<GameObject>(std::move(go2)));
 
 		GameShader sShader = GameShader("s01", GameShaderType::GLSL, 500, 6);
-		sShader.loadShaderFromFile(std::string(ASSETS_PATH) + "testShader.glsl");
+		sShader.loadGLSLShaderFromFile(std::string(ASSETS_PATH) + "testShader.glsl");
 
 		auto test_shaderData = sShader.getShaderUniformDataPtr();
 
@@ -200,7 +200,7 @@ namespace graxl {
 
 
 		GameShader sShader2 = GameShader("s02", GameShaderType::GLSL, 1000, 1);
-		sShader2.loadShaderFromFile(std::string(ASSETS_PATH) + "testShader2.glsl");
+		sShader2.loadGLSLShaderFromFile(std::string(ASSETS_PATH) + "testShader2.glsl");
 
 		std::shared_ptr<GameShader::ShaderUniformData> test_shaderData2 = sShader2.getShaderUniformDataPtr();
 		_currentScene->addShader(std::move(sShader2));
