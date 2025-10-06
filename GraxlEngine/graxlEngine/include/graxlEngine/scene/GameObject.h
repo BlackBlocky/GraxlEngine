@@ -11,8 +11,10 @@ namespace graxl {
 
 class GameObject {
 public:
-	GameObject(GameTexture& __texture)
-		: texture(__texture), position({ 0, 0 }), size({ 1, 1 }), drawOrder(0) {};
+	GameObject(GameTexture& __texture, const std::string& __name)
+		: texture(__texture), position({ 0, 0 }), size({ 1, 1 }), drawOrder(0), name(__name) {};
+
+	std::string name;
 
 	Vector2 position;
 	Vector2 size;

@@ -35,8 +35,8 @@ namespace graxl {
 		// Put every item that need to be rendered into a queue
 		_renderQueueMap_Base.clear();
 
-		for (const auto& gameObject : scene.gameObjects) {
-			const GameObject* const goPtr = gameObject.get();
+		for (const auto& gameObject : scene.getAllGameObjects()) {
+			const GameObject* const goPtr = gameObject.lock().get();
 			_renderQueueMap_Base[goPtr->drawOrder].push_back([this, goPtr]() {
 				this->_drawGameObject(*goPtr);
 			});

@@ -181,15 +181,15 @@ namespace graxl {
 		SetTextureFilter(tex.getTexture(), TEXTURE_FILTER_POINT);
 		SetTextureFilter(tex2.getTexture(), TEXTURE_FILTER_POINT);
 
-		GameObject go = GameObject(tex);
-		GameObject go2 = GameObject(tex2);
+		GameObject go = GameObject(tex, "a");
+		GameObject go2 = GameObject(tex2, "b");
 		go2.position = { 3, 3 };
 
 		go.size = { 1, 1 };
 
 		_currentScene = std::make_shared<Scene>("Test Scene", "");
-		_currentScene->gameObjects.push_back(std::make_unique<GameObject>(std::move(go)));
-		_currentScene->gameObjects.push_back(std::make_unique<GameObject>(std::move(go2)));
+		_currentScene->addGameObject(std::move(go));
+		_currentScene->addGameObject(std::move(go2));
 
 		GameShader sShader = GameShader("s01", GameShaderType::GLSL, 500, 6);
 		sShader.loadGLSLShaderFromFile(std::string(ASSETS_PATH) + "testShader.glsl");
@@ -220,10 +220,10 @@ namespace graxl {
 
 		// Adding a test Image
 		GameTexture testImgTexture = GameTexture("C:\\Users\\eliah\\Downloads\\o-FORESTS-facebook-2994683020.jpg", "test-img-tex");
-		GameObject testImg = GameObject(testImgTexture);
+		GameObject testImg = GameObject(testImgTexture, "c");
 		testImg.size = {20, 13};
 		testImg.drawOrder = -1000;
-		_currentScene->gameObjects.push_back(std::make_unique<GameObject>(std::move(testImg)));
+		_currentScene->addGameObject(std::move(testImg));
 
 		// TESTING ----
 
