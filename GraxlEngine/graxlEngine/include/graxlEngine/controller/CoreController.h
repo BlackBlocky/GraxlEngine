@@ -49,6 +49,14 @@ public:
 	};
 	void addGameState(GameState&& newGameState);
 
+	// Unloads the current scene with all its contents if there is one, and creates an empty scene with the given name
+	void createEmptyScene(const std::string sceneName);
+	// Adds every scene to the scene registry that are detected in the given folder path
+	void loadAndCreateSceneRegestry(const std::string folderPath);
+	// Loads a scene from the scene regestry into the current scene. If there is a previous scene, it will be unloaded first
+	void loadSceneFromRegestry(const std::string sceneId);
+	const std::weak_ptr<Scene> getCurrentSceneWeakPtr() const { return _currentScene; }
+
 	// const getter
 	const std::unordered_map<std::string, std::shared_ptr<const GameState>> getDefinedGameStates() const {
 		return this->GAME_STATES;
@@ -75,7 +83,7 @@ private:
 	std::optional<ImGUIObjectRenderer> _imguiObjectRenderer;
 
 	// Data
-	std::optional<Scene> _currentScene;
+	std::shared_ptr<Scene> _currentScene = nullptr;
 
 	bool _debugMode = false;
 
@@ -94,6 +102,8 @@ private:
 	static void _raylibLogCallback(int msgType, const char* text, va_list args);
 
 	void switchToGameState(const std::string stateId);
+
+	void _switchToScene(Scene&& scene);
 
 };
 

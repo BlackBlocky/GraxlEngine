@@ -21,7 +21,7 @@ Scene JSONLoader::loadScene(std::string path)
 	json jsonData = json::parse(file);
 
 	std::string sceneName = jsonData["sceneName"].get<std::string>();
-	Scene newScene(sceneName);
+	Scene newScene(sceneName, "");
 
 	// Load UIElements from JSON and add it to the scene
 	std::vector<json> uiElements = jsonData["ui"].get<std::vector<json>>();

@@ -12,9 +12,10 @@ namespace graxl {
 
 class Scene {
 public:
-	Scene(const std::string& name) : sceneName(name) {}
+	Scene(const std::string& name, const std::string& __sceneId) : sceneName(name), sceneId(__sceneId) {}
 
 	const std::string sceneName;
+	const std::string sceneId;   // Used for scene regestry, should be unique
 
 	std::vector<UIElement> uiElements;
 	std::vector<std::unique_ptr<GameObject>> gameObjects; // With pointer for potential polymorphism in the future

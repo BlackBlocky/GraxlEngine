@@ -140,6 +140,22 @@ namespace graxl {
 		spdlog::debug("CoreController: Added GameState \"{}\"", newGameStateIdCopy);
 	}
 
+	void CoreController::createEmptyScene(const std::string sceneName)
+	{
+		spdlog::info("CoreController: Creating empty scene \"{}\"...", sceneName);
+		_switchToScene(Scene(sceneName, "graxl.created.emptyScene"));
+	}
+
+	void CoreController::loadAndCreateSceneRegestry(const std::string folderPath)
+	{
+		throw std::logic_error("The method or operation is not implemented.");
+	}
+
+	void CoreController::loadSceneFromRegestry(const std::string sceneId)
+	{
+		throw std::logic_error("The method or operation is not implemented.");
+	}
+
 	int CoreController::initGameLoop(std::string startingState)
 	{
 		// Make sure everything is settep up correctly before starting the game loop
@@ -171,7 +187,7 @@ namespace graxl {
 
 		go.size = { 1, 1 };
 
-		_currentScene.emplace("Test Scene");
+		_currentScene = std::make_shared<Scene>("Test Scene", "");
 		_currentScene->gameObjects.push_back(std::make_unique<GameObject>(std::move(go)));
 		_currentScene->gameObjects.push_back(std::make_unique<GameObject>(std::move(go2)));
 
@@ -399,6 +415,22 @@ namespace graxl {
 		newGameStatePtr->onEnterState(*newGameStatePtr);
 		spdlog::debug("CoreController: GameState changed to {}", stateId);
 	}
+
+	void CoreController::_switchToScene(Scene&& scene)
+	{
+		spdlog::debug("CoreController: Switching scenes: NewID:\"{}\", OldID:\"{}\"", ((_currentScene != nullptr) ? _currentScene->sceneId : "NONE"), scene.sceneId);
+
+		// Deload the current scene if there is one
+		if (_currentScene != nullptr) {
+			spdlog::info("CoreController: Unloading current scene \"{}\" (id:{})...", _currentScene->sceneName, _currentScene->sceneId);
+			_currentScene->unloadScene();
+		}
+
+		spdlog::info("CoreController: Switching to new scene \"{}\" (id:{})...", scene.sceneName, scene.sceneId);
+		_currentScene = std::make_shared<Scene>(std::move(scene));
+
+		// Note: We dont have to worry about the old scene, because we using shared_ptr. So no mempory leaks should happen :P
+ 	}
 
 	void CoreController::_stopGame()
 	{
