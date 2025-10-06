@@ -403,8 +403,11 @@ namespace graxl {
 		spdlog::debug("CoreController: Switching to Game State {}...", stateId);
 		std::shared_ptr<const GameState> oldGameStatePtr = _currentGameState.lock();
 		if (oldGameStatePtr != nullptr) {
-			spdlog::trace("CoreController: Calling onLeaveState for the previous state: {}", oldGameStatePtr->id);
-			oldGameStatePtr->onLeaveState(*oldGameStatePtr);
+			if (oldGameStatePtr->onLeaveState != nullptr) {
+				spdlog::trace("CoreController: Calling onLeaveState for the previous state: {}", oldGameStatePtr->id);
+				oldGameStatePtr->onLeaveState(*oldGameStatePtr);
+			}
+			else spdlog::trace("CoreController: Previous GameState \"{}\" has no onLeaveState function, so nothing will be called.", oldGameStatePtr->id);
 		}
 		else spdlog::trace("CoreController: No previous GameState set, so no onLeaveState will be called.");
 		
@@ -412,8 +415,11 @@ namespace graxl {
 
 		spdlog::trace("CoreController: Calling onEnterState for the new state: {}", stateId);
 		std::shared_ptr<const GameState> newGameStatePtr = _currentGameState.lock();
-		newGameStatePtr->onEnterState(*newGameStatePtr);
-		spdlog::debug("CoreController: GameState changed to {}", stateId);
+		if (newGameStatePtr->onEnterState != nullptr) {
+			newGameStatePtr->onEnterState(*newGameStatePtr);
+			spdlog::debug("CoreController: GameState changed to {}", stateId);
+		}
+		else spdlog::trace("CoreController: New GameState \"{}\" has no onEnterState function, so nothing will be called.", stateId);
 	}
 
 	void CoreController::_switchToScene(Scene&& scene)
