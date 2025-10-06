@@ -146,7 +146,7 @@ namespace graxl {
 		_switchToScene(Scene(sceneName, "graxl.created.emptyScene"));
 	}
 
-	void CoreController::loadAndCreateSceneRegestry(const std::string folderPath)
+	void CoreController::addSceneFolderToSceneRegestry(const std::string folderPath)
 	{
 		throw std::logic_error("The method or operation is not implemented.");
 	}
@@ -175,23 +175,7 @@ namespace graxl {
 		__raylibInfoLogToDebug = true; // Used by the _raylibLogCallback Method
 
 		// TESTING ----
-		GameTexture tex = GameTexture((std::string(ASSETS_PATH) + "textures/MagnetSnakeDown.png").c_str(), "Test-GameTexture-Player");
-		GameTexture tex2 = GameTexture((std::string(ASSETS_PATH) + "textures/SpikeDown.png").c_str(), "Test-GameTexture-Spike");
-
-		SetTextureFilter(tex.getTexture(), TEXTURE_FILTER_POINT);
-		SetTextureFilter(tex2.getTexture(), TEXTURE_FILTER_POINT);
-
-		GameObject go = GameObject(tex, "a");
-		GameObject go2 = GameObject(tex2, "b");
-		go2.position = { 3, 3 };
-
-		go.size = { 1, 1 };
-
-		_currentScene = std::make_shared<Scene>("Test Scene", "");
-		_currentScene->addGameObject(std::move(go));
-		_currentScene->addGameObject(std::move(go2));
-
-		GameShader sShader = GameShader("s01", GameShaderType::GLSL, 500, 6);
+		/*GameShader sShader = GameShader("s01", GameShaderType::GLSL, 500, 6);
 		sShader.loadGLSLShaderFromFile(std::string(ASSETS_PATH) + "testShader.glsl");
 
 		auto test_shaderData = sShader.getShaderUniformDataPtr();
@@ -205,25 +189,7 @@ namespace graxl {
 		std::shared_ptr<GameShader::ShaderUniformData> test_shaderData2 = sShader2.getShaderUniformDataPtr();
 		_currentScene->addShader(std::move(sShader2));
 	
-		test_shaderData2->intensity = 1.0f;
-		test_shaderData2->customValues[0] = 1000.0f;
-
-	
-
-		//if (_imguiInitialized) _imguiObjectRenderer->addShaderToRenderList(_currentScene->getShaders()[0]);
-
-		//if (_imguiInitialized) {
-		//	// Remove constness by making a local non-const shared_ptr
-		//	auto shaderPtr = coolScene.getShaders()[0];
-		//	_imguiObjectRenderer->addShaderToRenderList(shaderPtr);
-		//}
-
-		// Adding a test Image
-		GameTexture testImgTexture = GameTexture("C:\\Users\\eliah\\Downloads\\o-FORESTS-facebook-2994683020.jpg", "test-img-tex");
-		GameObject testImg = GameObject(testImgTexture, "c");
-		testImg.size = {20, 13};
-		testImg.drawOrder = -1000;
-		_currentScene->addGameObject(std::move(testImg));
+		test_shaderData2->intensity = 1.0f;*/
 
 		// TESTING ----
 
@@ -248,11 +214,12 @@ namespace graxl {
 			_doTick(GetFrameTime(), dEventBuffer);
 
 			// Rendering
-			_sceneRenderer.renderSceneToRendererBuffer(*_currentScene);
-			_currentScene->getShaders()[0]->getShaderUniformDataPtr()->globalTime = static_cast<float>(GetTime()); // TESTING
+			if(_currentScene != nullptr) _sceneRenderer.renderSceneToRendererBuffer(*_currentScene);
 			BeginDrawing();	
 
-			_sceneRenderer.renderBufferToScreen();
+			if (_currentScene != nullptr) _sceneRenderer.renderBufferToScreen();
+			else _sceneRenderer.renderBlank();
+
 			if (_debugMode && _imguiInitialized) _imGUITick(dEventBuffer);
 		
 
@@ -260,13 +227,6 @@ namespace graxl {
 		}
 
 		spdlog::info("CoreController: Exiting game loop...");
-
-		tex.unloadGameTexture(); // TESTING
-		tex2.unloadGameTexture();
-		testImgTexture.unloadGameTexture();
-
-		//sShader.unloadGameShader();
-		_currentScene->unloadScene();
 
 		_sceneRenderer.unloadRenderTextures();
 

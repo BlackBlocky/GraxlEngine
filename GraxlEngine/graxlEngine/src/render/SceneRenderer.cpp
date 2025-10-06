@@ -115,6 +115,13 @@ namespace graxl {
 		DrawTexture(_rendererResult.texture, _blackBorderSize.x / 2, _blackBorderSize.y / 2, WHITE);
 	}
 
+	void SceneRenderer::renderBlank()
+	{
+		ClearBackground(BLACK);
+	}
+
+
+
 	void SceneRenderer::unloadRenderTextures()
 	{
 		spdlog::info("SceneRenderer: Finally unloading RenderTextures used for rendering...");

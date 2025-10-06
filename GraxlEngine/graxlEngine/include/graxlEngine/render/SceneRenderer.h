@@ -19,6 +19,8 @@ public:
 	void renderSceneToRendererBuffer(const Scene& scene);
 	// In order to call the function, raylib must be initialized AND raylib MUST be in render mode.
 	void renderBufferToScreen();
+	// In order to call the function, raylib must be initialized AND raylib MUST be in render mode. It will also just draw a gray background
+	void renderBlank();
 
 	// This should be called when the renderer isnt needed anymore
 	void unloadRenderTextures();

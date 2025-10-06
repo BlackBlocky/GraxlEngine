@@ -52,7 +52,7 @@ public:
 	// Unloads the current scene with all its contents if there is one, and creates an empty scene with the given name
 	void createEmptyScene(const std::string sceneName);
 	// Adds every scene to the scene registry that are detected in the given folder path
-	void loadAndCreateSceneRegestry(const std::string folderPath);
+	void addSceneFolderToSceneRegestry(const std::string folderPath);
 	// Loads a scene from the scene regestry into the current scene. If there is a previous scene, it will be unloaded first
 	void loadSceneFromRegestry(const std::string sceneId);
 	const std::weak_ptr<Scene> getCurrentSceneWeakPtr() const { return _currentScene; }
