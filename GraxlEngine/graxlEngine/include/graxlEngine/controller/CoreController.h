@@ -1,6 +1,5 @@
 #pragma once
 
-#include <graxlEngine/controller/MenuController.h>
 #include <graxlEngine/controller/ConsoleController.h>
 #include <graxlEngine/InputSystem.h>
 #include <graxlEngine/ui/ImGUIObjectRenderer.h>
@@ -25,10 +24,7 @@ public:
 	// Init Functions
 	int init(bool debugMode, int framerate);
 
-	int loadGameConfig();
-	int loadGlobalAssets();
 	int initWindow(int framerate);
-	int defineGameStates();
 	int initInputSystem();
 	int startImGUI();
 	int initConsole();
@@ -68,7 +64,6 @@ private:
 	std::weak_ptr<const GameState> _currentGameState;
 
 	// Status booleans
-	bool _gloablAssetsLoaded = false;
 	bool _windowInitialized = false;
 	bool _inputSystemInitialized = false;
 	bool _imguiInitialized = false;
@@ -76,7 +71,6 @@ private:
 	bool _gameLoopInitialized = false;
 
 	// Other controll classes
-	MenuController _menuController;
 	SceneRenderer _sceneRenderer;
 	std::optional<InputSystem> _inputSystem;
 	std::optional<ConsoleController> _consoleController;

@@ -16,7 +16,6 @@ namespace graxl {
 	int CoreController::init(bool debugMode, int framerate) {
 		_debugMode = debugMode;
 
-		if (this->loadGlobalAssets() != 0) return 1;
 		if (this->initWindow(framerate) != 0) return 1;
 		if (this->initInputSystem() != 0) return 1;
 		if (this->startImGUI() != 0) return 1;
@@ -24,15 +23,6 @@ namespace graxl {
 
 		return 0;
 	}
-
-	int CoreController::loadGlobalAssets()
-	{
-
-		_gloablAssetsLoaded = true;
-		spdlog::info("CoreController: Global assets loaded successfully.");
-		return 0;
-	}
-
 
 	int CoreController::initWindow(int framerate)
 	{
@@ -159,10 +149,6 @@ namespace graxl {
 	int CoreController::initGameLoop(std::string startingState)
 	{
 		// Make sure everything is settep up correctly before starting the game loop
-		if (!_gloablAssetsLoaded) {
-			spdlog::critical("CoreController: Cannot initialize game loop, global assets not loaded.");
-			return 1;
-		}
 		if (!_windowInitialized) {
 			spdlog::critical("CoreController: Cannot initialize game loop, window not initialized.");
 			return 1;
