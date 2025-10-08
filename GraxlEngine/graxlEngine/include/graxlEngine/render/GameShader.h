@@ -3,6 +3,7 @@
 #include <string>
 #include <optional>
 #include <vector>
+#include <filesystem>
 
 #include <raylib.h>
 #include <spdlog/spdlog.h>
@@ -69,7 +70,7 @@ public:
 	// Methods etc.
 
 	// Returns: 0=Succes, 1=UnkownError, 2=FileNotFound, 3=NoAllowed
-	int loadGLSLShaderFromFile(std::string path);
+	int loadGLSLShaderFromFile(const std::filesystem::path& path);
 	void unloadGameShader();
 
 	const std::optional<Shader>& getShader() const;

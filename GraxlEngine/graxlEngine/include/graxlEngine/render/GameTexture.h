@@ -13,11 +13,11 @@ namespace graxl {
 class GameTexture {
 public:
 	// Creating a GameTexture. Will load the texture from the given path. If the path is invalid, a placeholder texture will be created, with the size of 100x100
-	GameTexture(const std::string texturePath, std::string textureName) : name(textureName) {
+	GameTexture(const std::filesystem::path& texturePath, std::string textureName) : name(textureName) {
 		
 		// Check if the path to the texture is valid. If not, create a placeholder texture. Otherwise just load the texture normally
 		if(!std::filesystem::exists(texturePath)) {
-			spdlog::error("GameTexture: Texture path \"{}\" does not exist! Using Placeholder texture...", texturePath);
+			spdlog::error("GameTexture: Texture path \"{}\" does not exist! Using Placeholder texture...", texturePath.string());
 			// Creating a placeholder texture, beacuse the path is invalid. With the size of 100
 			static Color placeholderPixels[100 * 100];
 			static bool placeholderPixelsInitialized = false;
@@ -36,8 +36,8 @@ public:
 		}
 		else {
 			// Just lopading the texture normally
-			spdlog::trace("GameTexture: Loading Texture from path \"{}\"...", texturePath);
-			_myTexture = LoadTexture(texturePath.c_str());
+			spdlog::trace("GameTexture: Loading Texture from path \"{}\"...", texturePath.string());
+			_myTexture = LoadTexture(texturePath.string().c_str());
 			_myTextureRect = Rectangle{ 0.0f, 0.0f, (float)_myTexture.width, (float)_myTexture.height };
 			_isLoaded = true;
 		}

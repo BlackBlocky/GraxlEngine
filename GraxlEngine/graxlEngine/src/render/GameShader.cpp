@@ -21,19 +21,19 @@ namespace graxl {
 		}
 	}
 
-	int GameShader::loadGLSLShaderFromFile(std::string path)
+	int GameShader::loadGLSLShaderFromFile(const std::filesystem::path& path)
 	{
 		if (c_type != GameShaderType::GLSL) {
 			spdlog::error("GameShader: Tried to load a GLSL shader on a non GLSL shader typed GameShader: {}", c_name);
 			return 3; // Wrong type error code
 		}
 		if (!std::filesystem::exists(path)) {
-			spdlog::error("GameShader: File {} not found for GameShader: {}", path, c_name);
+			spdlog::error("GameShader: File {} not found for GameShader: {}", path.string(), c_name);
 			return 2; // Error code - File doesnt Exist
 		}		
 	
-		spdlog::debug("GameShader: Loading shader \"{}\" at {}", c_name, path);
-		_myShader = LoadShader(NULL, path.c_str());
+		spdlog::debug("GameShader: Loading shader \"{}\" at {}", c_name, path.string());
+		_myShader = LoadShader(NULL, path.string().c_str());
 		_shaderWasLoaded = true;
 		return 0;
 	}
