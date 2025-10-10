@@ -35,7 +35,7 @@ namespace graxl {
 		// Put every item that need to be rendered into a queue
 		_renderQueueMap_Base.clear();
 
-		for (const auto& gameObject : scene.getAllGameObjects()) {
+		for (const auto& gameObject : scene.getAllGameObjectsConst()) {
 			const GameObject* const goPtr = gameObject.lock().get();
 			_renderQueueMap_Base[goPtr->drawOrder].push_back([this, goPtr]() {
 				this->_drawGameObject(*goPtr);
@@ -258,15 +258,23 @@ namespace graxl {
 
 	void SceneRenderer::_drawGameObject(const GameObject& gameObject)
 	{
-		const Texture2D& drawTexture = gameObject.texture.getTexture();
-		const Rectangle& drawTextureRect = gameObject.texture.getTextureRect();
+		// If the gameObjects texture is a nullptr/invalid, just draw a magenta box
+		if (const auto& tex = gameObject.texture.lock()) {
+			Vector2Int goSizePixels = _calcViewportPixelSize(gameObject.size);
+			Vector2Int drawPosPixels = _calcViewportPixelPos(gameObject.position, goSizePixels);
 
-		Vector2Int goSizePixels = _calcViewportPixelSize(gameObject.size);
-		Vector2Int drawPosPixels = _calcViewportPixelPos(gameObject.position, goSizePixels);
+			const Texture2D& drawTexture = tex->getTexture();
+			const Rectangle& drawTextureRect = tex->getTextureRect();
 
-		DrawTexturePro(drawTexture, drawTextureRect,
-			{ (float)drawPosPixels.x, (float)drawPosPixels.y, (float)goSizePixels.x, (float)goSizePixels.y}, {0.0f, 0.0f},
-			0.0f, WHITE);
+			DrawTexturePro(drawTexture, drawTextureRect,
+				{ (float)drawPosPixels.x, (float)drawPosPixels.y, (float)goSizePixels.x, (float)goSizePixels.y }, { 0.0f, 0.0f },
+				0.0f, WHITE);
+		}
+		else {
+			// texture is nullptr
+			_drawSquare(gameObject.size, gameObject.position, MAGENTA);
+		}
+		
 	}
 
 	

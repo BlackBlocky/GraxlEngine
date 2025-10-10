@@ -7,11 +7,13 @@
 #include <graxlEngine/event/DoubleEventBuffer.h>
 #include <graxlEngine/render/GameTexture.h>
 
+#include <memory>
+
 namespace graxl {
 
 class GameObject {
 public:
-	GameObject(GameTexture& __texture, const std::string& __name)
+	GameObject(std::weak_ptr<GameTexture> __texture, const std::string& __name)
 		: texture(__texture), position({ 0, 0 }), size({ 1, 1 }), drawOrder(0), name(__name) {};
 
 	std::string name;
@@ -19,7 +21,8 @@ public:
 	Vector2 position;
 	Vector2 size;
 
-	GameTexture& texture;
+	// Should ONLY be a texture from a scene the GameObject itself also exists. Otherwise there probably be a looooot of trouble
+	std::weak_ptr<GameTexture> texture;
 
 	// Higher = Foreground
 	int drawOrder;

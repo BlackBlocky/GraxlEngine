@@ -15,7 +15,7 @@ namespace graxl {
 		return std::weak_ptr<GameTexture>(_texturesMap[key]);
 	}
 
-	std::weak_ptr<GameTexture> Scene::loadTexture(const std::string& key, const std::string& path, const std::string& name)
+	std::weak_ptr<GameTexture> Scene::loadTexture(const std::string& key, const std::filesystem::path& path, const std::string& name)
 	{
 		if (_texturesMap.contains(key)) {
 			spdlog::error("Scene: Tried to load texture into the scene \"{}\" with an already used key: \"{}\"", this->sceneName, key);
@@ -81,10 +81,12 @@ namespace graxl {
 		return foundGameObjects;
 	}
 
-	void Scene::addGameObject(GameObject&& gameObject)
+	std::weak_ptr<GameObject> Scene::createGameObject(const std::string& name, const std::string& textureKey)
 	{
-		spdlog::trace("Scene: Moving GameObject {} into scene {}...", gameObject.name, sceneName);
-		_gameObjects.push_back(std::make_shared<GameObject>(std::move(gameObject)));
+		spdlog::trace("Scene: Creating GameObject {} in scene {} with textureKey {}", name, this->sceneName, textureKey);
+		_gameObjects.emplace_back(std::make_shared<GameObject>(this->getTexture(textureKey), name));
+
+		return std::weak_ptr<GameObject>(_gameObjects.back());
 	}
 
 	void Scene::destroyGameObject(std::weak_ptr<GameObject>& gameObject)
@@ -112,7 +114,7 @@ namespace graxl {
 		_gameObjects.erase(foundIt);
 	}
 
-	const std::vector<std::weak_ptr<const GameObject>> Scene::getAllGameObjects() const
+	const std::vector<std::weak_ptr<const GameObject>> Scene::getAllGameObjectsConst() const
 	{
 		std::vector<std::weak_ptr<const GameObject>> returnResult;
 

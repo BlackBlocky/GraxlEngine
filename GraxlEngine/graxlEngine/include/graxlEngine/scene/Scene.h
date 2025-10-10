@@ -26,7 +26,7 @@ public:
 	
 	const std::weak_ptr<GameTexture> getTexture(const std::string& key);
 	// Loading a texture into the scene
-	std::weak_ptr<GameTexture> loadTexture(const std::string& key, const std::string& path, const std::string& name);
+	std::weak_ptr<GameTexture> loadTexture(const std::string& key, const std::filesystem::path& path, const std::string& name);
 	// Will take the Textures ownership and moves it into the scene
 	std::weak_ptr<GameTexture> addTextureObject(const std::string& key, GameTexture&& texture);
 
@@ -36,11 +36,11 @@ public:
 		
 	std::weak_ptr<GameObject> getGameObjectByName(const std::string& name);
 	const std::vector<std::weak_ptr<GameObject>> getGameObjectsByName(const std::string& name);
-	// Will move the gameObject into the scenes "RAM", aka taking ownership
-	void addGameObject(GameObject&& gameObject);
+	// Creating an GameObject and loading it into the scene. The textureKey muste be defined in the scenes textures
+	std::weak_ptr<GameObject> createGameObject(const std::string& name, const std::string& textureKey);
 	void destroyGameObject(std::weak_ptr<GameObject>& gameObject);
 	const std::vector<std::shared_ptr<GameObject>>& getAllGameObjects() { return _gameObjects; };
-	const std::vector<std::weak_ptr<const GameObject>> getAllGameObjects() const;
+	const std::vector<std::weak_ptr<const GameObject>> getAllGameObjectsConst() const;
 
 	// Unload all resources, that are connected to this scene, like shaders
 	void unloadScene();
