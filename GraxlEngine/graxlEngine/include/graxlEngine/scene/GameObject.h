@@ -21,6 +21,13 @@ public:
 	Vector2 position;
 	Vector2 size;
 
+	// Setter
+	inline GameObject& setName(const std::string& v) { name = v; return *this; };
+	inline GameObject& setPosition(const Vector2& v) { position = v; return *this; };
+	inline GameObject& setSize(const Vector2& v) { size = v; return *this; };
+	inline GameObject& setDrawOrder(const int v) { drawOrder = v; return *this; };
+	inline GameObject& setTexture(std::weak_ptr<GameTexture> v) { texture = v; return *this; };
+
 	// Should ONLY be a texture from a scene the GameObject itself also exists. Otherwise there probably be a looooot of trouble
 	std::weak_ptr<GameTexture> texture;
 
