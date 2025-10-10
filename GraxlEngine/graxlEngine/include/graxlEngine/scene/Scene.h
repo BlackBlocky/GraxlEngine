@@ -7,6 +7,10 @@
 #include <string>
 #include <vector>
 #include <memory>
+#include <unordered_map>
+
+// A Scene is like a whole world. Every Shader, Texture, GameObjects. It all is here. If the Scene is being unloaded,
+// everything will be gone aswell.
 
 namespace graxl {
 
@@ -20,6 +24,12 @@ public:
 
 	std::vector<UIElement> uiElements;
 	
+	const std::weak_ptr<GameTexture> getTexture(const std::string& key);
+	// Loading a texture into the scene
+	std::weak_ptr<GameTexture> loadTexture(const std::string& key, const std::string& path, const std::string& name);
+	// Will take the Textures ownership and moves it into the scene
+	std::weak_ptr<GameTexture> addTextureObject(const std::string& key, GameTexture&& texture);
+
 	const std::vector<std::shared_ptr<GameShader>>& getShaders() const { return _shaders; } // (note for me: wont affect ownership, just a reference)
 	// Will overtake the shaders ownership, and moving the shader intos the scenes "RAM". Also sorting the shader array by priority
 	void addShader(GameShader&& shader);
@@ -37,6 +47,7 @@ public:
 
 private:
 	std::vector<std::shared_ptr<GameShader>> _shaders;
+	std::unordered_map<std::string, std::shared_ptr<GameTexture>> _texturesMap;
 	std::vector<std::shared_ptr<GameObject>> _gameObjects; // With pointer for potential polymorphism in the future
 };
 

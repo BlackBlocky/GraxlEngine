@@ -13,7 +13,7 @@ namespace graxl {
 class GameTexture {
 public:
 	// Creating a GameTexture. Will load the texture from the given path. If the path is invalid, a placeholder texture will be created, with the size of 100x100
-	GameTexture(const std::filesystem::path& texturePath, std::string textureName) : name(textureName) {
+	GameTexture(const std::filesystem::path& texturePath, const std::string textureName) : name(textureName) {
 		
 		// Check if the path to the texture is valid. If not, create a placeholder texture. Otherwise just load the texture normally
 		if(!std::filesystem::exists(texturePath)) {
