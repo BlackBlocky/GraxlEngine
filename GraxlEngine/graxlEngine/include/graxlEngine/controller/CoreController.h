@@ -3,6 +3,7 @@
 #include <graxlEngine/controller/ConsoleController.h>
 #include <graxlEngine/InputSystem.h>
 #include <graxlEngine/ui/ImGUIObjectRenderer.h>
+#include <graxlEngine/scene/SceneDef.h>
 
 #include <graxlEngine/event/GameEvent.h>
 #include <graxlEngine/event/GameKeyEvent.h>
@@ -46,11 +47,13 @@ public:
 	void addGameState(GameState&& newGameState);
 
 	// Unloads the current scene with all its contents if there is one, and creates an empty scene with the given name
-	void createEmptyScene(const std::string sceneName);
-	// Adds every scene to the scene registry that are detected in the given folder path
-	void addSceneFolderToSceneRegestry(const std::string folderPath);
-	// Loads a scene from the scene regestry into the current scene. If there is a previous scene, it will be unloaded first
-	void loadSceneFromRegestry(const std::string sceneId);
+	std::weak_ptr<Scene> createEmptyScene(const std::string sceneName);
+	// Creates a new loader for a scene
+	void createSceneDefinition(const std::string& id, const std::string& name, std::function<void(Scene& scene)>& buildFunction);
+	// Switches to a scene by the scene id. Scene have to be added by the createSceneDefinition(...) function
+	std::weak_ptr<Scene> buildAndSwitchToScene(const std::string& id);
+
+
 	const std::weak_ptr<Scene> getCurrentSceneWeakPtr() const { return _currentScene; }
 
 	// const getter
@@ -61,6 +64,7 @@ public:
 private:
 	// Gamestates
 	std::unordered_map<std::string, std::shared_ptr<const GameState>> GAME_STATES;
+	std::unordered_map<std::string, SceneDef> _sceneDefs;
 	std::weak_ptr<const GameState> _currentGameState;
 
 	// Status booleans

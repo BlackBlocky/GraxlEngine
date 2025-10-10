@@ -130,21 +130,37 @@ namespace graxl {
 		spdlog::debug("CoreController: Added GameState \"{}\"", newGameStateIdCopy);
 	}
 
-	void CoreController::createEmptyScene(const std::string sceneName)
+	std::weak_ptr<Scene> CoreController::createEmptyScene(const std::string sceneName)
 	{
 		spdlog::info("CoreController: Creating empty scene \"{}\"...", sceneName);
 		_switchToScene(Scene(sceneName, "graxl.created.emptyScene"));
+
+		return _currentScene;
 	}
 
-	void CoreController::addSceneFolderToSceneRegestry(const std::string folderPath)
+	void CoreController::createSceneDefinition(const std::string& id, const std::string& name, std::function<void(Scene& scene)>& buildFunction)
 	{
-		throw std::logic_error("The method or operation is not implemented.");
+		if (_sceneDefs.contains(id)) {
+			spdlog::error("CoreController: Tried to add Scene-Definition {} with id {}, but there is already a Scene-Definition with that id!", name, id);
+			return;
+		}
+
+		spdlog::debug("CoreController: Adding Scene-Definition {} with id {}", name, id);
+		_sceneDefs.emplace(id, SceneDef(id, name, buildFunction));
 	}
 
-	void CoreController::loadSceneFromRegestry(const std::string sceneId)
+	std::weak_ptr<Scene> CoreController::buildAndSwitchToScene(const std::string& id)
 	{
-		throw std::logic_error("The method or operation is not implemented.");
+		if (!_sceneDefs.contains(id)) {
+			spdlog::error("CoreController: Tried to buildAndSwitch to Scene-Id {}, but this id isn't registered!");
+			return std::weak_ptr<Scene>();
+		}
+
+		_switchToScene(_sceneDefs[id].build());
+
+		return _currentScene;
 	}
+
 
 	int CoreController::initGameLoop(std::string startingState)
 	{
