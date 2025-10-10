@@ -152,7 +152,7 @@ namespace graxl {
 	std::weak_ptr<Scene> CoreController::buildAndSwitchToScene(const std::string& id)
 	{
 		if (!_sceneDefs.contains(id)) {
-			spdlog::error("CoreController: Tried to buildAndSwitch to Scene-Id {}, but this id isn't registered!");
+			spdlog::error("CoreController: Tried to buildAndSwitch to Scene-Id {}, but this id isn't registered!", id);
 			return std::weak_ptr<Scene>();
 		}
 
