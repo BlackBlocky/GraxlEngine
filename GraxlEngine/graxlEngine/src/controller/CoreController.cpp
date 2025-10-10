@@ -138,7 +138,7 @@ namespace graxl {
 		return _currentScene;
 	}
 
-	void CoreController::createSceneDefinition(const std::string& id, const std::string& name, std::function<void(Scene& scene)>& buildFunction)
+	void CoreController::createSceneDefinition(const std::string& id, const std::string& name, std::function<void(Scene& scene)> buildFunction)
 	{
 		if (_sceneDefs.contains(id)) {
 			spdlog::error("CoreController: Tried to add Scene-Definition {} with id {}, but there is already a Scene-Definition with that id!", name, id);

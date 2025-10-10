@@ -10,7 +10,7 @@ namespace graxl {
 
 	class SceneDef {
 	public:
-		SceneDef(const std::string& id, const std::string& name, std::function<void(Scene& scene)>& buildFunction)
+		SceneDef(const std::string& id, const std::string& name, std::function<void(Scene& scene)> buildFunction)
 			: sceneId(id), sceneName(name), _buildFunc(buildFunction) {
 		};
 

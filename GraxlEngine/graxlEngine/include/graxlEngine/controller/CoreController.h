@@ -49,7 +49,7 @@ public:
 	// Unloads the current scene with all its contents if there is one, and creates an empty scene with the given name
 	std::weak_ptr<Scene> createEmptyScene(const std::string sceneName);
 	// Creates a new loader for a scene
-	void createSceneDefinition(const std::string& id, const std::string& name, std::function<void(Scene& scene)>& buildFunction);
+	void createSceneDefinition(const std::string& id, const std::string& name, std::function<void(Scene& scene)> buildFunction);
 	// Switches to a scene by the scene id. Scene have to be added by the createSceneDefinition(...) function
 	std::weak_ptr<Scene> buildAndSwitchToScene(const std::string& id);
 
