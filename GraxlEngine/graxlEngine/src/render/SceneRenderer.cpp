@@ -82,7 +82,6 @@ namespace graxl {
 				BeginTextureMode(*textureSwapB);
 				if (gameShaderSharedPtr->getShader() != nullptr) {
 					BeginShaderMode(gameShaderSharedPtr->getShader()->value()); // Get the RaylibShader out of the GameShader
-					spdlog::info("Shader draw {}", gameShaderSharedPtr->getShader()->value().id);
 					_drawAToB(*textureSwapA, *textureSwapB);
 					EndShaderMode();
 				}
