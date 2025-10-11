@@ -59,9 +59,11 @@ namespace graxl {
 		// A queue is not needed, because shaders are presorted by priority/orderInLayer. (Done in Scene.cpp)
 
 		// Update all GLSL shaders uniform data
-		for (const std::shared_ptr<GameShader>& gameShader : scene.getShaders()) {
-			if (gameShader->getType() == GameShaderType::GLSL) {
-				_updateShaderUniformData(gameShader.get(), &gameShader->getShaderUniformData());
+		for (const std::weak_ptr<GameShader>& gameShader : scene.getShaderListSorted()) {
+			auto gameShaderSharedPtr = gameShader.lock();
+
+			if (gameShaderSharedPtr->getType() == GameShaderType::GLSL) {
+				_updateShaderUniformData(gameShaderSharedPtr.get(), &gameShaderSharedPtr->getShaderUniformData());
 			}
 		}
 
@@ -73,10 +75,12 @@ namespace graxl {
 			RenderTexture2D* textureSwapA = &_renderTexA; // In A will always be the last drawn result
 			RenderTexture2D* textureSwapB = &_renderTexB;
 
-			for (const std::shared_ptr<GameShader>& gameShader : scene.getShaders()) {
-				if (gameShader->getType() != GameShaderType::GLSL) continue; // Only GLSL are drawn here!
+			for (const std::weak_ptr<GameShader>& gameShader : scene.getShaderListSorted()) {
+				auto gameShaderSharedPtr = gameShader.lock();
+				
+				if (gameShaderSharedPtr->getType() != GameShaderType::GLSL) continue; // Only GLSL are drawn here!
 				BeginTextureMode(*textureSwapB);
-				BeginShaderMode(gameShader->getShader().value()); // Get the RaylibShader out of the GameShader
+				BeginShaderMode(gameShaderSharedPtr->getShader().value()); // Get the RaylibShader out of the GameShader
 				_drawAToB(*textureSwapA, *textureSwapB);
 				EndShaderMode();
 				EndTextureMode();

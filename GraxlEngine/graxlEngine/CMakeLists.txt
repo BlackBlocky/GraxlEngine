@@ -35,6 +35,13 @@ FETCHCONTENT_DECLARE(
 )
 FETCHCONTENT_MAKEAVAILABLE(imgui)
 
+FETCHCONTENT_DECLARE(
+	magic_enum
+	GIT_REPOSITORY https://github.com/Neargye/magic_enum.git
+	GIT_TAG v0.9.7
+)
+FETCHCONTENT_MAKEAVAILABLE(magic_enum)
+
 add_library(imgui
     ${imgui_SOURCE_DIR}/imgui.cpp
     ${imgui_SOURCE_DIR}/imgui_draw.cpp
@@ -68,5 +75,6 @@ target_link_libraries(graxlEngine PRIVATE nlohmann_json::nlohmann_json)
 target_link_libraries(graxlEngine PRIVATE spdlog::spdlog)
 target_link_libraries(graxlEngine PRIVATE imgui)
 target_link_libraries(graxlEngine PRIVATE rlImGui)
+target_link_libraries(graxlEngine PRIVATE magic_enum)
 
 # TODO: Add tests and install targets if needed.

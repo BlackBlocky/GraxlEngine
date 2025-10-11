@@ -20,11 +20,7 @@ const enum class GameShaderType {
 class GameShader {
 public:
 	// Constructor / Deconstructur
-	GameShader(const std::string shaderName, const GameShaderType shaderType, const int __shaderPriority, const int __customValuesAmount)
-		: c_name(shaderName), _shaderWasLoaded(false), c_type(shaderType), c_shaderPriority(__shaderPriority),
-		_movedFrom(false), c_customValuesAmount(__customValuesAmount) { 
-        spdlog::trace("GameShader: Created GameShader \"{}\" of type {} with priority {} and customValuesAmount {}", c_name, (int)c_type, c_shaderPriority, c_customValuesAmount);
-	}
+	GameShader(const std::string shaderName, const GameShaderType shaderType, const int __shaderPriority, const int __customValuesAmount);
 	~GameShader();
 
 	// Copy Constructor
@@ -89,13 +85,6 @@ public:
 			return nullptr;
 		}
 
-		if (!_shaderUniformData) {
-			_shaderUniformData = std::make_shared<ShaderUniformData>();
-			_shaderUniformData->globalTime = 0.0f;
-			_shaderUniformData->songTime = 0.0f;
-			_shaderUniformData->intensity = 0.0f;
-			_shaderUniformData->customValues.resize(c_customValuesAmount, 0.0f);
-		}
 		return _shaderUniformData;
 	}
 	// Returns a const reference. Read-only
@@ -117,12 +106,12 @@ private:
 	// Threat these 3 as const
 	std::string c_name;
 	GameShaderType c_type;
-	int c_shaderPriority; // Higher = First
+	int c_shaderPriority; // Higher = Forground, Lower = Background
 	int c_customValuesAmount;
 
 	bool _shaderWasLoaded;
 	std::optional<Shader> _myShader; // Always contains a glsl shader. Raylib shader.
-	std::shared_ptr<ShaderUniformData> _shaderUniformData; // Contains all data that needs to be updated every frame
+	std::shared_ptr<ShaderUniformData> _shaderUniformData; // Contains all data that needs to be updated every frame. Being initalized in the Construkur, if shadertype is GLSL
 
 	bool _movedFrom;
 };

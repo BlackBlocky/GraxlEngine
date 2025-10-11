@@ -28,30 +28,30 @@ namespace graxl {
 		}
 	}
 
-	void ImGUIObjectRenderer::addShaderToRenderList(const std::shared_ptr<GameShader>& shader_sp)
+	void ImGUIObjectRenderer::addShaderToRenderList(const std::weak_ptr<GameShader>& shader_wp)
 	{
 		// Check if the shader is already in the list
 		for (const auto& weakShader : _connectedShaderDatas) {
 			if (auto sharedShader = weakShader.lock()) {
-				if (sharedShader == shader_sp) {
-					spdlog::warn("ImGUIObjectRenderer: Tried to add shader \"{}\" to ImGUI render list, but it is already in the list!", shader_sp->getName());
+				if (sharedShader == shader_wp.lock()) {
+					spdlog::warn("ImGUIObjectRenderer: Tried to add shader \"{}\" to ImGUI render list, but it is already in the list!", shader_wp.lock()->getName());
 					return;
 				}
 			}
 		}
 
 		// Add the shader to the list as an weak pointer
-		_connectedShaderDatas.push_back(shader_sp);
-		spdlog::trace("ImGUIObjectRenderer: Added shader \"{}\" to ImGUI render list.", shader_sp->getName());
+		_connectedShaderDatas.push_back(shader_wp);
+		spdlog::trace("ImGUIObjectRenderer: Added shader \"{}\" to ImGUI render list.", shader_wp.lock()->getName());
 	}
 
-	void ImGUIObjectRenderer::removeShaderToRenderList(const std::shared_ptr<GameShader>& shader_sp)
+	void ImGUIObjectRenderer::removeShaderToRenderList(const std::weak_ptr<GameShader>& shader_wp)
 	{
 		// Find the iterator pos of the shader_sp arguemnt
 		auto shaderSpFoundIt = std::find_if(_connectedShaderDatas.begin(), _connectedShaderDatas.end(),
-			[&shader_sp](const auto& weakShader) {
+			[&shader_wp](const auto& weakShader) {
 				if (auto sharedShader = weakShader.lock()) {
-					return sharedShader == shader_sp;
+					return sharedShader == shader_wp.lock();
 				}
 				return false;
 			});
@@ -59,10 +59,10 @@ namespace graxl {
 		// Remove if found, else log warning
 		if (shaderSpFoundIt != _connectedShaderDatas.end()) {
 			_connectedShaderDatas.erase(shaderSpFoundIt);
-			spdlog::trace("ImGUIObjectRenderer: Removed shader \"{}\" from ImGUI render list.", shader_sp->getName());
+			spdlog::trace("ImGUIObjectRenderer: Removed shader \"{}\" from ImGUI render list.", shader_wp.lock()->getName());
 		}
 		else {
-			spdlog::warn("ImGUIObjectRenderer: Tried to remove shader \"{}\" from ImGUI render list, but it was not found in the list!", shader_sp->getName());
+			spdlog::warn("ImGUIObjectRenderer: Tried to remove shader \"{}\" from ImGUI render list, but it was not found in the list!", shader_wp.lock()->getName());
 		}
 	}
 

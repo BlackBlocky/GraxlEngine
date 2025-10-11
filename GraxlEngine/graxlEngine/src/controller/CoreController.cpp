@@ -262,10 +262,19 @@ namespace graxl {
 					guiShaderSwitchEvent->targetShaderName, guiShaderSwitchEvent->shaderShouldClose);
 
 				// Get shader from current scene by name
-				const auto& currentShaders = _currentScene->getShaders();
+				if (_currentScene == nullptr) {
+					spdlog::warn("CoreController: Tried to switch gui for shader {}, but the current scene is null", guiShaderSwitchEvent->targetShaderName);
+					return;
+				}
+				const auto& currentShaders = _currentScene->getShaderListSorted();
+				if (currentShaders.empty()) {
+					spdlog::warn("CoreController: Tired to switch gui for shader {}, but there are no shaders registed in scene {}", guiShaderSwitchEvent->targetShaderName, _currentScene->sceneName);
+					return;
+				}
+
 				const auto targetShaderIt = std::find_if(currentShaders.begin(), currentShaders.end(),
-					[&guiShaderSwitchEvent](const std::shared_ptr<GameShader>& if_shader) {
-						return if_shader->getName() == guiShaderSwitchEvent->targetShaderName;
+					[&guiShaderSwitchEvent](const std::weak_ptr<GameShader>& if_shader) {
+						return if_shader.lock()->getName() == guiShaderSwitchEvent->targetShaderName;
 					}
 				);
 

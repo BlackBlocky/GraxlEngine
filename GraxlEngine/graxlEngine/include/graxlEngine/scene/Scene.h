@@ -8,6 +8,7 @@
 #include <vector>
 #include <memory>
 #include <unordered_map>
+#include <map>
 
 // A Scene is like a whole world. Every Shader, Texture, GameObjects. It all is here. If the Scene is being unloaded,
 // everything will be gone aswell.
@@ -24,16 +25,20 @@ public:
 
 	std::vector<UIElement> uiElements;
 	
+	// --- TEXTURE ---
 	const std::weak_ptr<GameTexture> getTexture(const std::string& key);
 	// Loading a texture into the scene
 	std::weak_ptr<GameTexture> loadTexture(const std::string& key, const std::filesystem::path& path, const std::string& name);
 	// Will take the Textures ownership and moves it into the scene
 	std::weak_ptr<GameTexture> addTextureObject(const std::string& key, GameTexture&& texture);
 
-	const std::vector<std::shared_ptr<GameShader>>& getShaders() const { return _shaders; } // (note for me: wont affect ownership, just a reference)
-	// Will overtake the shaders ownership, and moving the shader intos the scenes "RAM". Also sorting the shader array by priority
-	void addShader(GameShader&& shader);
-		
+	// --- SHADER ---
+	const std::vector<std::weak_ptr<GameShader>> getShaderListSorted() const { return _sortedShaderList; };
+	std::weak_ptr<GameShader> createSimpleShader(const std::string& key, const std::string& shaderName, GameShaderType shaderType);
+	std::weak_ptr<GameShader> createGlslShader(const std::string& key, const std::string& shaderName, const std::filesystem::path& path, int priority, int customValuesAmount);
+	std::weak_ptr<GameShader> getShaderByKey(const std::string& key);
+
+	// --- GAME OBJECT ---
 	std::weak_ptr<GameObject> getGameObjectByName(const std::string& name);
 	const std::vector<std::weak_ptr<GameObject>> getGameObjectsByName(const std::string& name);
 	// Creating an GameObject and loading it into the scene. The textureKey muste be defined in the scenes textures
@@ -46,7 +51,11 @@ public:
 	void unloadScene();
 
 private:
-	std::vector<std::shared_ptr<GameShader>> _shaders;
+	std::unordered_map<std::string, std::shared_ptr<GameShader>> _shadersMap; // The shaders are sorted by the priority
+	std::vector<std::weak_ptr<GameShader>> _sortedShaderList; // From lowest to highest priority. Mainly used for rendering
+	// Puts every GameShader in _shadersMap into _sortedShaderList sorted
+	void _resortSortedShaderList();
+
 	std::unordered_map<std::string, std::shared_ptr<GameTexture>> _texturesMap;
 	std::vector<std::shared_ptr<GameObject>> _gameObjects; // With pointer for potential polymorphism in the future
 };

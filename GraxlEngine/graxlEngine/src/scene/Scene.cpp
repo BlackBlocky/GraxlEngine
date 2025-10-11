@@ -2,6 +2,9 @@
 
 #include <spdlog/spdlog.h>
 #include <algorithm>
+#include <exception>
+
+#include <magic_enum/magic_enum.hpp>
 
 namespace graxl {
 	const std::weak_ptr<GameTexture> Scene::getTexture(const std::string& key)
@@ -40,22 +43,55 @@ namespace graxl {
 		return std::weak_ptr<GameTexture>(_texturesMap[key]);
 	}
 
-
-	// Will overtake the shaders ownership, and moving the shader intos the scenes "RAM"
-	// Please keep in mind that the source will be empty after the operation
-	void Scene::addShader(GameShader&& shader)
+	std::weak_ptr<GameShader> Scene::createSimpleShader(const std::string& key, const std::string& shaderName, GameShaderType shaderType)
 	{
-		spdlog::trace("Scene: Moving shader {} into scene {}...", shader.getName(), sceneName);
+		// Validate
+		if (shaderType == GameShaderType::GLSL) throw std::invalid_argument("GameShaderType GLSL is not allowed in createSimpleShader(). Use createGlslShader() instead.");
+		if (_shadersMap.contains(key)) {
+			spdlog::error("Scene: Tired to add Simple shader \"{}\" with key \"{}\", the the key is already used!", shaderName, key);
+			return std::weak_ptr<GameShader>();
+		}
 
-		// Insert-sort
-		// Find the first shader with a higher priority than the new shader
-		// Shaders with less priority are drawn first, so the higher priority shaders are drawn on top of the lower priority shaders
-		auto it = std::find_if(_shaders.begin(), _shaders.end(), [&](const auto& ifShader) {
-			return shader.getPriority() < ifShader->getPriority();
-		});
+		// Create Shader
+		spdlog::trace("Scene: Creating simple shader \"{}\" with GameShaderType of \"{}\"", shaderName, magic_enum::enum_name(shaderType));
+		_shadersMap.emplace(key, std::make_shared<GameShader>(shaderName, shaderType, INT32_MIN, 0));
 
-		// Move the shader with the higher priority to the right, and insert the new shader at its position
-		_shaders.insert(it, std::make_shared<GameShader>(std::move(shader)));
+		_resortSortedShaderList();
+
+		return _shadersMap[key];
+	}
+
+	std::weak_ptr<GameShader> Scene::createGlslShader(const std::string& key, const std::string& shaderName, const std::filesystem::path& path, int priority, int customValuesAmount)
+	{
+		// Validate
+		if (_shadersMap.contains(key)) {
+			spdlog::error("Scene: Tired to add GLSL shader \"{}\" with key \"{}\", the the key is already used!", shaderName, key);
+			return std::weak_ptr<GameShader>();
+		}
+		if (!std::filesystem::exists(path)) {
+			spdlog::error("Scene: Tried to load GLSL Shader \"{}\", but filepath \"{}\" doesnt exist!", shaderName, path.string());
+			return std::weak_ptr<GameShader>();
+		}
+
+		// Create Shader
+		spdlog::trace("Scene: Loading GLSL Shader \"{}\" on with key \"{}\" on path \"{}\"", shaderName, key, path.string());
+		_shadersMap.emplace(key, std::make_shared<GameShader>(shaderName, GameShaderType::GLSL, priority, customValuesAmount));
+		_shadersMap[key]->loadGLSLShaderFromFile(path);
+
+		_resortSortedShaderList();
+
+		return _shadersMap[key];
+	}
+
+	std::weak_ptr<GameShader> Scene::getShaderByKey(const std::string& key)
+	{
+		if (!_shadersMap.contains(key)) {
+			spdlog::warn("Scene: Tried to get shader \"{}\" in scene \"{}\", but there is no shader with that key!", key, sceneName);
+			return std::weak_ptr<GameShader>();
+		}
+
+		spdlog::trace("Scene: Getter for Shader found \"{}\" in scene \"{}\". Returning weak_ptr...", key, sceneName);
+		return _shadersMap[key];
 	}
 
 	std::weak_ptr<GameObject> Scene::getGameObjectByName(const std::string& name)
@@ -129,14 +165,29 @@ namespace graxl {
 	void Scene::unloadScene()
 	{
 		spdlog::info("Scene: Unloading scene {}...", sceneName);
-		for (auto& shader : _shaders) {
-			shader->unloadGameShader();
+		for (auto& shader : _shadersMap) {
+			shader.second->unloadGameShader();
 		}
-		_shaders.clear();
+		_shadersMap.clear();
 
 		// Note: Textures from GameObjects wont be unloaded, because they only own a reference. (They can used across multiple GameObjects)
 
 		spdlog::info("Scene: Scene {} unloaded.", sceneName);
+	}
+
+	void Scene::_resortSortedShaderList()
+	{
+		_sortedShaderList.clear();
+
+		// Move every Shader into the list
+		for (auto& shaderSharedPtr : _shadersMap) {
+			_sortedShaderList.push_back(shaderSharedPtr.second);
+		}
+
+		// Sort the list
+		std::sort(_sortedShaderList.begin(), _sortedShaderList.end(), [](std::weak_ptr<GameShader>& sortShaderA, std::weak_ptr<GameShader>& sortShaderB){
+			return sortShaderA.lock()->getPriority() < sortShaderB.lock()->getPriority();
+		});
 	}
 
 }

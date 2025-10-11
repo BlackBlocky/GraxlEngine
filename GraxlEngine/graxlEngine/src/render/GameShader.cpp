@@ -3,8 +3,24 @@
 #include <filesystem>
 
 #include <spdlog/spdlog.h>
+#include <magic_enum/magic_enum.hpp>
 
 namespace graxl {
+
+	GameShader::GameShader(const std::string shaderName, const GameShaderType shaderType, const int __shaderPriority, const int __customValuesAmount)
+		: c_name(shaderName), _shaderWasLoaded(false), c_type(shaderType), c_shaderPriority(__shaderPriority),
+		_movedFrom(false), c_customValuesAmount(__customValuesAmount) {
+		spdlog::trace("GameShader: Created GameShader \"{}\" of type {} with priority {} and customValuesAmount {}", c_name, magic_enum::enum_name(c_type), c_shaderPriority, c_customValuesAmount);
+
+		if (shaderType == GameShaderType::GLSL) {
+			spdlog::trace("GameShader: ... Creating shaderUniformData for {}, because its type is GLSL", shaderName);
+			_shaderUniformData = std::make_shared<ShaderUniformData>();
+			_shaderUniformData->globalTime = 0.0f;
+			_shaderUniformData->songTime = 0.0f;
+			_shaderUniformData->intensity = 0.0f;
+			_shaderUniformData->customValues.resize(c_customValuesAmount, 0.0f);
+		}
+	}
 
 	GameShader::~GameShader() {
 		if (_movedFrom) return;

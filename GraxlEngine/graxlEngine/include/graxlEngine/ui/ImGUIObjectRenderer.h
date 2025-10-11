@@ -13,8 +13,8 @@ namespace graxl {
 		// Make sure youre in the ImGui render mode before calling this function!
 		void tick();
 
-		void addShaderToRenderList(const std::shared_ptr<GameShader>& shader_sp);
-		void removeShaderToRenderList(const std::shared_ptr<GameShader>& shader_sp);
+		void addShaderToRenderList(const std::weak_ptr<GameShader>& shader_sp);
+		void removeShaderToRenderList(const std::weak_ptr<GameShader>& shader_sp);
 
 	private:
 		std::vector<std::weak_ptr<GameShader>> _connectedShaderDatas;
