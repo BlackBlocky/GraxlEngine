@@ -3,6 +3,7 @@
 #include <spdlog/spdlog.h>
 
 #include <utility>
+#include <optional>
 
 namespace graxl {
 	SceneRenderer::SceneRenderer()
@@ -80,8 +81,8 @@ namespace graxl {
 				
 				if (gameShaderSharedPtr->getType() != GameShaderType::GLSL) continue; // Only GLSL are drawn here!
 				BeginTextureMode(*textureSwapB);
-				if (gameShaderSharedPtr->getShader() != nullptr) {
-					BeginShaderMode(gameShaderSharedPtr->getShader()->value()); // Get the RaylibShader out of the GameShader
+				if (const std::optional<Shader>& shaderData = gameShaderSharedPtr->getShader()) {
+					BeginShaderMode(shaderData.value()); // Get the RaylibShader out of the GameShader
 					_drawAToB(*textureSwapA, *textureSwapB);
 					EndShaderMode();
 				}
@@ -215,12 +216,12 @@ namespace graxl {
 	//		 it doesn't generate data, like globalTime. The only exception is the resolution, because its only defined by the renderer
 	void SceneRenderer::_updateShaderUniformData(const GameShader* const targetShader, const GameShader::ShaderUniformData* const uniformData)
 	{
-		if(targetShader->getShader() == nullptr) {
+		if(!targetShader->getShader().has_value()) {
 			spdlog::warn("SceneRenderer: Tried to update ShaderUniformData of Shader \"{}\", but the shader isnt loaded or a GLSL shader!", targetShader->getName());
 			return;
 		}
 
-		const Shader& shaderRef = targetShader->getShader()->value();
+		const Shader& shaderRef = targetShader->getShader().value();
 
 		// Update the default values
 		int shaderLocation_GlobalTime = GetShaderLocation(shaderRef, "globalTime");

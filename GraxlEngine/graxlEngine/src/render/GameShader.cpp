@@ -72,9 +72,9 @@ namespace graxl {
 		_myShader.value().id = 0;
 	}
 
-	const std::optional<Shader>* GameShader::getShader() const
+	const std::optional<Shader>& GameShader::getShader() const
 	{
-		return (_shaderWasLoaded && _myShader) ? &_myShader : nullptr;
+		return _myShader;
 	}
 
 }
