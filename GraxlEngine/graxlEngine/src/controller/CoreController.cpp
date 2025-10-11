@@ -211,6 +211,10 @@ namespace graxl {
 
 		spdlog::info("CoreController: Exiting game loop...");
 
+		if (_currentScene != nullptr) {
+			_currentScene->unloadScene();
+		}
+
 		_sceneRenderer.unloadRenderTextures();
 
 		spdlog::info("CoreController: Game loop ended, stopping game...");

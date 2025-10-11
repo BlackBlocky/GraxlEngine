@@ -43,6 +43,9 @@ public:
 	const std::vector<std::weak_ptr<GameObject>> getGameObjectsByName(const std::string& name);
 	// Creating an GameObject and loading it into the scene. The textureKey muste be defined in the scenes textures
 	std::weak_ptr<GameObject> createGameObject(const std::string& name, const std::string& textureKey);
+	// DO NOT call this in a for loop that iterates though all GameObjects. Use (not implemented yet :P) instead. This will push and event that will be processed next frame
+	// In other words, do not call this inside a GameObject Component Function! (At least dont this is if you dont want a spectecular crash lol)
+	// The function will instantly remove this GameObject from the _gameObjects vector
 	void destroyGameObject(std::weak_ptr<GameObject>& gameObject);
 	const std::vector<std::shared_ptr<GameObject>>& getAllGameObjects() { return _gameObjects; };
 	const std::vector<std::weak_ptr<const GameObject>> getAllGameObjectsConst() const;
@@ -58,6 +61,8 @@ private:
 
 	std::unordered_map<std::string, std::shared_ptr<GameTexture>> _texturesMap;
 	std::vector<std::shared_ptr<GameObject>> _gameObjects; // With pointer for potential polymorphism in the future
+
+	void _gameObjectDestroyProtocol(GameObject& target);
 };
 
 };

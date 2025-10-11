@@ -147,6 +147,7 @@ namespace graxl {
 		}
 
 		// Remove it from the vector
+		_gameObjectDestroyProtocol(*foundIt->get());
 		_gameObjects.erase(foundIt);
 	}
 
@@ -170,9 +171,20 @@ namespace graxl {
 		}
 		_shadersMap.clear();
 
-		// Note: Textures from GameObjects wont be unloaded, because they only own a reference. (They can used across multiple GameObjects)
+		for (auto& texture : _texturesMap) {
+			texture.second->unloadGameTexture();
+		}
+		_texturesMap.clear();
 
-		spdlog::info("Scene: Scene {} unloaded.", sceneName);
+		// NOTE: During Scene unload, no destroyGameObject() calls are made.
+		//       We directly clear _gameObjects here.
+		for (auto& go : _gameObjects) {
+			_gameObjectDestroyProtocol(*go);
+			go.reset();
+		}
+		_gameObjects.clear();
+
+		spdlog::info("Scene: ... Scene {} unloaded.", sceneName);
 	}
 
 	void Scene::_resortSortedShaderList()
@@ -188,6 +200,13 @@ namespace graxl {
 		std::sort(_sortedShaderList.begin(), _sortedShaderList.end(), [](std::weak_ptr<GameShader>& sortShaderA, std::weak_ptr<GameShader>& sortShaderB){
 			return sortShaderA.lock()->getPriority() < sortShaderB.lock()->getPriority();
 		});
+	}
+
+	void Scene::_gameObjectDestroyProtocol(GameObject& target)
+	{
+		spdlog::trace("Scene: Destroying GameObject\"{}\"...");
+
+		// No function yet, but already here, well yeah
 	}
 
 }
