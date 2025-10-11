@@ -14,13 +14,6 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(raylib)
 
-FetchContent_Declare(
-	json
-	GIT_REPOSITORY https://github.com/nlohmann/json.git
-	GIT_TAG v3.12.0
-)
-FetchContent_MakeAvailable(json)
-
 FETCHCONTENT_DECLARE(
 	spdlog
 	GIT_REPOSITORY https://github.com/gabime/spdlog.git
@@ -71,7 +64,6 @@ target_compile_features(graxlEngine PRIVATE cxx_std_20)
 target_include_directories(graxlEngine PUBLIC "include/")
 
 target_link_libraries(graxlEngine PUBLIC raylib)
-target_link_libraries(graxlEngine PRIVATE nlohmann_json::nlohmann_json)
 target_link_libraries(graxlEngine PRIVATE spdlog::spdlog)
 target_link_libraries(graxlEngine PRIVATE imgui)
 target_link_libraries(graxlEngine PRIVATE rlImGui)
