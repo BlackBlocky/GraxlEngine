@@ -42,7 +42,7 @@ private:
 	void _updateShaderUniformData(const GameShader* const targetShader, const GameShader::ShaderUniformData* const uniformData);
 
 	// IMPORTANT: RenderTextureMode must be set to the TARGET-RenderTexture2D before calling that function! (Becase optimization)
-	void _drawAToB(RenderTexture2D& source, RenderTexture2D& target);
+	void _drawAToB(RenderTexture2D& source, RenderTexture2D& target, bool flipY);
 
 	void _drawSquare(const Vector2& pos, const Vector2& size, const Color& color);
 	void _drawGameObject(const GameObject& gameObject);

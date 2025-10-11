@@ -83,7 +83,7 @@ namespace graxl {
 				BeginTextureMode(*textureSwapB);
 				if (const std::optional<Shader>& shaderData = gameShaderSharedPtr->getShader()) {
 					BeginShaderMode(shaderData.value()); // Get the RaylibShader out of the GameShader
-					_drawAToB(*textureSwapA, *textureSwapB);
+					_drawAToB(*textureSwapA, *textureSwapB, true);
 					EndShaderMode();
 				}
 				else {
@@ -97,7 +97,7 @@ namespace graxl {
 
 			// Finally drawing the result to the _rendererResult texture
 			BeginTextureMode(_rendererResult);
-			_drawAToB(*textureSwapA, _rendererResult);
+			_drawAToB(*textureSwapA, _rendererResult, false);
 			EndTextureMode();
 		}
 		// --- Shader Rendering done ---	
@@ -250,11 +250,24 @@ namespace graxl {
 	// DRAWING FUNCTIONS
 	// +++++++++++++++++
 
-	void SceneRenderer::_drawAToB(RenderTexture2D& source, RenderTexture2D& target)
+	void SceneRenderer::_drawAToB(RenderTexture2D& source, RenderTexture2D& target, bool flipY)
 	{
 		// Note: We dont need to use the blackBorder offset, because all RenderTexture2D should be just the viewport size
 		// Note: the target is actually not used... but i leave to make thing more clear i guess ikd xD
-		DrawTexture(source.texture, 0, 0, WHITE);
+		
+		if (flipY) {
+			// Flipping the y axis because on render Textures (0,0) is on the bottom left, while on the screen its on the top left on (0,0)
+			// This is only a issue in ShaderMode, because the shader basically flip the result; So we flip
+			DrawTextureRec(source.texture,
+				Rectangle{ 0, 0, (float)source.texture.width, -(float)source.texture.height },
+				Vector2{ 0, 0 },
+				WHITE
+			);
+		}
+		else {
+			// No corrections done. We dont need a correction if we dont do draw via ShaderMode
+			DrawTexture(source.texture, 0, 0, WHITE);
+		}			
 	}
 
 	void SceneRenderer::_drawSquare(const Vector2& pos, const Vector2& size, const Color& color)
