@@ -18,8 +18,6 @@
 
 namespace graxl {
 
-	constexpr const char* ASSETS_PATH = "C:\\Users\\eliah\\coding\\repos\\vstudio\\cmake\\GrashCpp\\assets\\";
-
 class CoreController {
 public:
 	// Init Functions

@@ -176,25 +176,6 @@ namespace graxl {
 
 		__raylibInfoLogToDebug = true; // Used by the _raylibLogCallback Method
 
-		// TESTING ----
-		/*GameShader sShader = GameShader("s01", GameShaderType::GLSL, 500, 6);
-		sShader.loadGLSLShaderFromFile(std::string(ASSETS_PATH) + "testShader.glsl");
-
-		auto test_shaderData = sShader.getShaderUniformDataPtr();
-
-		_currentScene->addShader(std::move(sShader));
-
-
-		GameShader sShader2 = GameShader("s02", GameShaderType::GLSL, 1000, 1);
-		sShader2.loadGLSLShaderFromFile(std::string(ASSETS_PATH) + "testShader2.glsl");
-
-		std::shared_ptr<GameShader::ShaderUniformData> test_shaderData2 = sShader2.getShaderUniformDataPtr();
-		_currentScene->addShader(std::move(sShader2));
-	
-		test_shaderData2->intensity = 1.0f;*/
-
-		// TESTING ----
-
 		// Here is the actual game loop
 		spdlog::info("CoreController: Starting game loop...");
 		_gameLoopInitialized = true;
