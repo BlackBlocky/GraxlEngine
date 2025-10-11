@@ -69,7 +69,7 @@ public:
 	int loadGLSLShaderFromFile(const std::filesystem::path& path);
 	void unloadGameShader();
 
-	const std::optional<Shader>& getShader() const;
+	const std::optional<Shader>* getShader() const;
 	bool isShaderLoaded() const { return _shaderWasLoaded && _myShader && IsShaderValid(_myShader.value()); }
 
 	const std::string& getName() const { return c_name; }

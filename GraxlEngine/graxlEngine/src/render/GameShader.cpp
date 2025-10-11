@@ -49,7 +49,7 @@ namespace graxl {
 		}		
 	
 		spdlog::debug("GameShader: Loading shader \"{}\" at {}", c_name, path.string());
-		_myShader = LoadShader(NULL, path.string().c_str());
+		_myShader.emplace(LoadShader(NULL, path.string().c_str()));
 		_shaderWasLoaded = true;
 		return 0;
 	}
@@ -72,9 +72,9 @@ namespace graxl {
 		_myShader.value().id = 0;
 	}
 
-	const std::optional<Shader>& GameShader::getShader() const
+	const std::optional<Shader>* GameShader::getShader() const
 	{
-		return (_shaderWasLoaded && _myShader) ? _myShader : std::nullopt;
+		return (_shaderWasLoaded && _myShader) ? &_myShader : nullptr;
 	}
 
 }
