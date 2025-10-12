@@ -21,13 +21,7 @@ namespace graxl {
 class CoreController {
 public:
 	// Init Functions
-	int init(bool debugMode, int framerate);
-
-	int initWindow(int framerate);
-	int initInputSystem();
-	int startImGUI();
-	int initConsole();
-
+	int init(const std::string& windowTitle, Vector2 aspectRatio, int baseWindowWidthPixels, int pixelsPerUnit, int framerate, bool debugMode);
 	int initGameLoop(std::string startingState);
 
 	// Config Functions
@@ -73,7 +67,7 @@ private:
 	bool _gameLoopInitialized = false;
 
 	// Other controll classes
-	SceneRenderer _sceneRenderer;
+	std::optional<SceneRenderer> _sceneRenderer;
 	std::optional<InputSystem> _inputSystem;
 	std::optional<ConsoleController> _consoleController;
 	std::optional<ImGUIObjectRenderer> _imguiObjectRenderer;
@@ -87,6 +81,13 @@ private:
 	std::vector<std::shared_ptr<const GameEvent>> _eventBufferA;
 	std::vector<std::shared_ptr<const GameEvent>> _eventBufferB;
 	bool _isSecondEventCycle = false;
+
+	// Init Methods
+
+	int _initWindow(int framerate, const std::string& title, Vector2 res);
+	int _initInputSystem();
+	int _startImGUI();
+	int _initConsole();
 
 	// Intern methods
 	void _doTick(float dt, const DoubleEventBuffer& dEventBuffer);

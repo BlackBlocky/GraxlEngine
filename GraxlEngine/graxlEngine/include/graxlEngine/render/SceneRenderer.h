@@ -13,7 +13,7 @@ namespace graxl {
 
 class SceneRenderer {
 public:
-	SceneRenderer();
+	SceneRenderer(Vector2 __aspectRatio, int __baseWidthPixels, int __basePixelsPerUnit);
 
 	// In order to call the function, raylib must be initialized AND raylib CANNOT be in render mode.
 	void renderSceneToRendererBuffer(const Scene& scene);
@@ -24,6 +24,10 @@ public:
 
 	// This should be called when the renderer isnt needed anymore
 	void unloadRenderTextures();
+
+	// Getter
+	const int getBaseWindowWidth() const { return _baseWindowWidth; };
+	const int getBaseWindowHeight() const { return _baseWindowHeight; };
 
 	Camera2D camera2d;
 
@@ -47,18 +51,18 @@ private:
 	void _drawSquare(const Vector2& pos, const Vector2& size, const Color& color);
 	void _drawGameObject(const GameObject& gameObject);
 
-	const int _baseWindowWidth = 1920;
-	const int _baseWindowHeight = 1080;
+	const int _baseWindowWidth = 1920; // (Default value, not really used)
+	const int _baseWindowHeight = 1080; // (Default value, not really used)
 
-	const int _aspectRatioX = 16;
-	const int _aspectRatioY = 9;
+	const int _aspectRatioX = 16; // (Default value, not really used)
+	const int _aspectRatioY = 9; // (Default value, not really used)
 
 	Vector2Int _currentScreenSize{ 0, 0 };
 	Vector2Int _blackBorderSize{ 0, 0 };
-	Vector2Int _viewport169Size{ 0, 0 };
+	Vector2Int _viewportAspectRatioSize{ 0, 0 };
 	Vector2 _viewportScale{ 0.0f, 0.0f };
 	
-	const int _basePixelsPerUnit = 100;
+	const int _basePixelsPerUnit = 100; // (Default value, not really used)
 	Vector2 _scaledPixelsPerUnit{ 0, 0 }; // Using an float because we need precision on that value. Because even small roundings will stack up
 
 	RenderTexture2D _rendererResult; // This rendertexture is used, to store the renderresult in it, and then later drawing it on the screen

@@ -13,18 +13,26 @@
 
 namespace graxl {
 
-	int CoreController::init(bool debugMode, int framerate) {
+	int CoreController::init(const std::string& windowTitle, Vector2 aspectRatio, int baseWindowWidthPixels, int pixelsPerUnit, int framerate, bool debugMode)
+	{
 		_debugMode = debugMode;
 
-		if (this->initWindow(framerate) != 0) return 1;
-		if (this->initInputSystem() != 0) return 1;
-		if (this->startImGUI() != 0) return 1;
-		if (this->initConsole() != 0) return 1;
+		// Setup the renderes aspect ratio, base resoultion. (Done first because a lot depends on the base resoultion)
+		_sceneRenderer.emplace(aspectRatio, baseWindowWidthPixels, pixelsPerUnit);
+
+		spdlog::info("Init Graxl with title:{}, AspectRatio:{}/{}, BaseRes:{}/{}, PixelsPerUnity:{}, Framerate:{}, DebugMode:{}", 
+			windowTitle, (int)aspectRatio.x, (int)aspectRatio.y, _sceneRenderer->getBaseWindowWidth(), _sceneRenderer->getBaseWindowHeight(), pixelsPerUnit, framerate, debugMode);
+
+		// Init every system for the Engine
+		if (this->_initWindow(framerate, windowTitle, {(float)_sceneRenderer->getBaseWindowWidth(), (float)_sceneRenderer->getBaseWindowHeight()}) != 0) return 1;
+		if (this->_initInputSystem() != 0) return 1;
+		if (this->_startImGUI() != 0) return 1;
+		if (this->_initConsole() != 0) return 1;
 
 		return 0;
 	}
 
-	int CoreController::initWindow(int framerate)
+	int CoreController::_initWindow(int framerate, const std::string& title, Vector2 res)
 	{
 		// Move Raylib logging to spdlog logging
 		SetTraceLogCallback(_raylibLogCallback);
@@ -33,7 +41,7 @@ namespace graxl {
 
 		SetConfigFlags(FLAG_WINDOW_RESIZABLE);
 
-		InitWindow(1920, 1080, "Grash Cpp");
+		InitWindow((int)res.x, (int)res.y, title.c_str());
 		SetTargetFPS(framerate);
 
 		_windowInitialized = true;
@@ -69,7 +77,7 @@ namespace graxl {
 		}
 	}
 
-	int CoreController::initInputSystem()
+	int CoreController::_initInputSystem()
 	{
 		spdlog::info("CoreController: Initializing input system...");
 
@@ -80,7 +88,7 @@ namespace graxl {
 		return 0;
 	}
 
-	int CoreController::startImGUI()
+	int CoreController::_startImGUI()
 	{
 		if (!_debugMode) {
 			spdlog::info("CoreController: Dont start ImGUI, because Debug-Mode is disabled");
@@ -100,7 +108,7 @@ namespace graxl {
 		return 0;
 	}
 
-	int CoreController::initConsole()
+	int CoreController::_initConsole()
 	{
 		if (!_debugMode) {
 			spdlog::info("CoreController: Dont initialize console, because Debug-Mode is disabled");
@@ -197,11 +205,11 @@ namespace graxl {
 			_doTick(GetFrameTime(), dEventBuffer);
 
 			// Rendering
-			if(_currentScene != nullptr) _sceneRenderer.renderSceneToRendererBuffer(*_currentScene);
+			if(_currentScene != nullptr) _sceneRenderer->renderSceneToRendererBuffer(*_currentScene);
 			BeginDrawing();	
 
-			if (_currentScene != nullptr) _sceneRenderer.renderBufferToScreen();
-			else _sceneRenderer.renderBlank();
+			if (_currentScene != nullptr) _sceneRenderer->renderBufferToScreen();
+			else _sceneRenderer->renderBlank();
 
 			if (_debugMode && _imguiInitialized) _imGUITick(dEventBuffer);
 		
@@ -215,7 +223,7 @@ namespace graxl {
 			_currentScene->unloadScene();
 		}
 
-		_sceneRenderer.unloadRenderTextures();
+		_sceneRenderer->unloadRenderTextures();
 
 		spdlog::info("CoreController: Game loop ended, stopping game...");
 		_stopGame();

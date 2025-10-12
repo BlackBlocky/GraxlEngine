@@ -6,7 +6,11 @@
 #include <optional>
 
 namespace graxl {
-	SceneRenderer::SceneRenderer()
+	SceneRenderer::SceneRenderer(Vector2 __aspectRatio, int __baseWidthPixels, int __basePixelsPerUnit)
+		: _aspectRatioX((int)__aspectRatio.x), _aspectRatioY((int)__aspectRatio.y), _basePixelsPerUnit(__basePixelsPerUnit),
+		_baseWindowWidth(__baseWidthPixels),
+		// Casting first to double for max presicion
+		_baseWindowHeight(static_cast<int>(static_cast<double>(__baseWidthPixels) / static_cast<double>(__aspectRatio.x) * static_cast<double>(__aspectRatio.y)))
 	{
 		camera2d.offset = { 0.0f, 0.0f };
 		camera2d.rotation = 0.0f;
@@ -17,7 +21,7 @@ namespace graxl {
 
 	void SceneRenderer::renderSceneToRendererBuffer(const Scene& scene)
 	{
-		// Calculate all the scaling etc for a 16:9 aspect ratio if needed
+		// Calculate all the scaling etc for the aspect ratio if needed
 		Vector2Int readedSize = { GetScreenWidth(), GetScreenHeight() };
 		if (readedSize.x != _currentScreenSize.x || readedSize.y != _currentScreenSize.y) _recalculateAspectRatio(readedSize);
 
@@ -25,11 +29,11 @@ namespace graxl {
 		BeginTextureMode(_renderTexA); // --- Rendering Base Scene ---
 
 		ClearBackground(DARKGRAY);
-		//DrawRectangle(_blackBorderSize.x / 2, _blackBorderSize.y / 2, _viewport169Size.x, _viewport169Size.y, GRAY); // Shows the viewport
+		//DrawRectangle(_blackBorderSize.x / 2, _blackBorderSize.y / 2, _viewportAspectRatioSize.x, _viewportAspectRatioSize.y, GRAY); // Shows the viewport
 
 		// Set the camera pos to the center of the screen, and move the camera back, so it everything is centered again
-		camera2d.target = { (float)_viewport169Size.x / 2.0f, (float)_viewport169Size.y / 2.0f };
-		camera2d.offset = { (float)_viewport169Size.x / 2.0f, (float)_viewport169Size.y / 2.0f };
+		camera2d.target = { (float)_viewportAspectRatioSize.x / 2.0f, (float)_viewportAspectRatioSize.y / 2.0f };
+		camera2d.offset = { (float)_viewportAspectRatioSize.x / 2.0f, (float)_viewportAspectRatioSize.y / 2.0f };
 
 		// -- Render the GameObjects --
 
@@ -121,7 +125,7 @@ namespace graxl {
 	void SceneRenderer::renderBufferToScreen()
 	{
 		// Because we are in drawing mode in this function, we can just draw the result buffer to the screen
-		// (Using the _blackBorderSize offset, because the screen is maybe not 16:9, what ever other target resoulution)
+		// (Using the _blackBorderSize offset, because the screen is maybe not the target aspect ratio, what ever other target resoulution)
 		DrawTexture(_rendererResult.texture, _blackBorderSize.x / 2, _blackBorderSize.y / 2, WHITE);
 	}
 
@@ -150,9 +154,9 @@ namespace graxl {
 		// Calculate the black box
 		_blackBorderSize = _calcBlackBorderSize(newScreenSize);
 		// Calculate the size of the actual rendered gameplay area, aka. viewport
-		_viewport169Size = { newScreenSize.x - _blackBorderSize.x, newScreenSize.y - _blackBorderSize.y }; // The size of the actual rendered gameplay
+		_viewportAspectRatioSize = { newScreenSize.x - _blackBorderSize.x, newScreenSize.y - _blackBorderSize.y }; // The size of the actual rendered gameplay
 		// Calc the scale factor for the game. If its larger than the base window size, or smaller. The scaling applies only the the viewport, not the whole window.
-		_viewportScale = { (float)_viewport169Size.x / (float)_baseWindowWidth, (float)_viewport169Size.y / (float)_baseWindowHeight };
+		_viewportScale = { (float)_viewportAspectRatioSize.x / (float)_baseWindowWidth, (float)_viewportAspectRatioSize.y / (float)_baseWindowHeight };
 
 		// Calc the new pixels per unit value
 		_scaledPixelsPerUnit = { _viewportScale.x * (float)_basePixelsPerUnit, _viewportScale.y * (float)_basePixelsPerUnit };
@@ -166,9 +170,9 @@ namespace graxl {
 			UnloadRenderTexture(_renderTexB);
 		}
 		// Create/Load new rendertextures with the according viewport size
-		_rendererResult = LoadRenderTexture(_viewport169Size.x, _viewport169Size.y);
-		_renderTexA = LoadRenderTexture(_viewport169Size.x, _viewport169Size.y);
-		_renderTexB = LoadRenderTexture(_viewport169Size.x, _viewport169Size.y);
+		_rendererResult = LoadRenderTexture(_viewportAspectRatioSize.x, _viewportAspectRatioSize.y);
+		_renderTexA = LoadRenderTexture(_viewportAspectRatioSize.x, _viewportAspectRatioSize.y);
+		_renderTexB = LoadRenderTexture(_viewportAspectRatioSize.x, _viewportAspectRatioSize.y);
 		spdlog::info("SceneRenderer: Recreating renderTextures done.");
 		// Setting the filters to POINT (So basically no filter)
 		SetTextureFilter(_rendererResult.texture, TEXTURE_FILTER_POINT);
@@ -177,20 +181,20 @@ namespace graxl {
 
 
 		spdlog::debug("SceneRenderer: Recalculated Aspect Ratio: Viewport({}, {}), Scale({}, {}), PixelsPerUnit({}, {})",
-			_viewport169Size.x, _viewport169Size.y, _viewportScale.x, _viewportScale.y, _scaledPixelsPerUnit.x, _scaledPixelsPerUnit.y);
+			_viewportAspectRatioSize.x, _viewportAspectRatioSize.y, _viewportScale.x, _viewportScale.y, _scaledPixelsPerUnit.x, _scaledPixelsPerUnit.y);
 	}
 
 	// Returns the total size of the border. Example left + right border size together.
 	SceneRenderer::Vector2Int SceneRenderer::_calcBlackBorderSize(Vector2Int& windowSize) {
-		int sub169Width = windowSize.x / _aspectRatioX;
-		int sub169Height = windowSize.y / _aspectRatioY;
+		int subAspectRatioWidth = windowSize.x / _aspectRatioX;
+		int subAspectRatioHeight = windowSize.y / _aspectRatioY;
 
-		if (sub169Width * 9 <= windowSize.y) {
-			int blackBorderHeight = windowSize.y - (sub169Width * _aspectRatioY);
+		if (subAspectRatioWidth * _aspectRatioY <= windowSize.y) {
+			int blackBorderHeight = windowSize.y - (subAspectRatioWidth * _aspectRatioY);
 			return { 0, blackBorderHeight };
 		}
 		else {
-			int blackBorderWidth = windowSize.x - (sub169Height * _aspectRatioX);
+			int blackBorderWidth = windowSize.x - (subAspectRatioHeight * _aspectRatioX);
 			return { blackBorderWidth, 0 };
 		}
 	}
@@ -199,7 +203,7 @@ namespace graxl {
 	{
 		return {
 			(int)(pos.x * _scaledPixelsPerUnit.x),
-			-((int)(pos.y * _scaledPixelsPerUnit.y)) + _viewport169Size.y - sizePixels.y
+			-((int)(pos.y * _scaledPixelsPerUnit.y)) + _viewportAspectRatioSize.y - sizePixels.y
 		};
 	}
 
@@ -233,7 +237,7 @@ namespace graxl {
 
 		// Update static values set by the renderer
 		int shaderLocation_Resolution = GetShaderLocation(shaderRef, "resolution");
-		Vector2 resFloat = { (float)_viewport169Size.x, (float)_viewport169Size.y };
+		Vector2 resFloat = { (float)_viewportAspectRatioSize.x, (float)_viewportAspectRatioSize.y };
 		SetShaderValue(shaderRef, shaderLocation_Resolution, (const void*)&resFloat, ShaderUniformDataType::SHADER_UNIFORM_VEC2);
 
 		// Update the custom values, based on the amount of custom values the shader has
