@@ -6,6 +6,7 @@
 #include <graxlEngine/event/GameEvent.h>
 #include <graxlEngine/event/DoubleEventBuffer.h>
 #include <graxlEngine/render/GameTexture.h>
+#include <graxlEngine/GVec.h>
 
 #include <memory>
 
@@ -18,13 +19,13 @@ public:
 
 	std::string name;
 
-	Vector2 position;
-	Vector2 size;
+	GVec2f position;
+	GVec2f size;
 
 	// Setter
 	inline GameObject& setName(const std::string& v) { name = v; return *this; };
-	inline GameObject& setPosition(const Vector2& v) { position = v; return *this; };
-	inline GameObject& setSize(const Vector2& v) { size = v; return *this; };
+	inline GameObject& setPosition(const GVec2f& v) { position = v; return *this; };
+	inline GameObject& setSize(const GVec2f& v) { size = v; return *this; };
 	inline GameObject& setDrawOrder(const int v) { drawOrder = v; return *this; };
 	inline GameObject& setTexture(std::weak_ptr<GameTexture> v) { texture = v; return *this; };
 

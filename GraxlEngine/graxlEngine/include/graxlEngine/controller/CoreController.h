@@ -10,6 +10,7 @@
 #include <graxlEngine/event/DoubleEventBuffer.h>
 
 #include <graxlEngine/render/SceneRenderer.h>
+#include <graxlEngine/GVec.h>
 
 #include <optional>
 #include <string>
@@ -21,7 +22,7 @@ namespace graxl {
 class CoreController {
 public:
 	// Init Functions
-	int init(const std::string& windowTitle, Vector2 aspectRatio, int baseWindowWidthPixels, int pixelsPerUnit, int framerate, bool debugMode);
+	int init(const std::string& windowTitle, GVec2i aspectRatio, int baseWindowWidthPixels, int pixelsPerUnit, int framerate, bool debugMode);
 	int initGameLoop(std::string startingState);
 
 	// Config Functions
@@ -84,7 +85,7 @@ private:
 
 	// Init Methods
 
-	int _initWindow(int framerate, const std::string& title, Vector2 res);
+	int _initWindow(int framerate, const std::string& title, GVec2i res);
 	int _initInputSystem();
 	int _startImGUI();
 	int _initConsole();

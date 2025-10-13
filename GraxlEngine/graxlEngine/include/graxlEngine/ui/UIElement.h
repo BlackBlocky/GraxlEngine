@@ -3,6 +3,8 @@
 #include <raylib.h>
 #include <string>
 
+#include <graxlEngine/GVec.h>
+
 namespace graxl {
 
 class UIElement {
@@ -17,13 +19,13 @@ public:
 		Dropdown
 	};
 
-	UIElement(UIElementType type, const Vector2 position, const Vector2 size, const std::string id, const std::string textValue, bool boolValue)
+	UIElement(UIElementType type, const GVec2i position, const GVec2i size, const std::string id, const std::string textValue, bool boolValue)
 		: type(type), position(position), size(size), id(id), textValue(textValue), boolValue(boolValue) {
 	}
 
 	UIElementType type;
-	Vector2 position;
-	Vector2 size;
+	GVec2i position;
+	GVec2i size;
 	std::string id;
 	std::string textValue;
 	bool boolValue;

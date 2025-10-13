@@ -6,6 +6,7 @@
 
 #include "graxlEngine/scene/Scene.h"
 #include <graxlEngine/scene/GameObject.h>
+#include <graxlEngine/GVec.h>
 
 #include "raylib.h"
 
@@ -13,7 +14,7 @@ namespace graxl {
 
 class SceneRenderer {
 public:
-	SceneRenderer(Vector2 __aspectRatio, int __baseWidthPixels, int __basePixelsPerUnit);
+	SceneRenderer(GVec2i __aspectRatio, int __baseWidthPixels, int __basePixelsPerUnit);
 
 	// In order to call the function, raylib must be initialized AND raylib CANNOT be in render mode.
 	void renderSceneToRendererBuffer(const Scene& scene);
@@ -32,23 +33,18 @@ public:
 	Camera2D camera2d;
 
 private:
-	struct Vector2Int {
-		int x;
-		int y;
-	};;
+	void _recalculateAspectRatio(GVec2i& newWindowSize);
+	GVec2i _calcBlackBorderSize(GVec2i& currentWindowSize);
 
-	void _recalculateAspectRatio(Vector2Int& newWindowSize);
-	Vector2Int _calcBlackBorderSize(Vector2Int& currentWindowSize);
-
-	Vector2Int _calcViewportPixelPos(const Vector2& pos, const Vector2Int& sizePixels);
-	Vector2Int _calcViewportPixelSize(const Vector2& size);
+	GVec2i _calcViewportPixelPos(const GVec2f& pos, const GVec2i& sizePixels);
+	GVec2i _calcViewportPixelSize(const GVec2f& size);
 	
 	void _updateShaderUniformData(const GameShader* const targetShader, const GameShader::ShaderUniformData* const uniformData);
 
 	// IMPORTANT: RenderTextureMode must be set to the TARGET-RenderTexture2D before calling that function! (Becase optimization)
 	void _drawAToB(RenderTexture2D& source, RenderTexture2D& target, bool flipY);
 
-	void _drawSquare(const Vector2& pos, const Vector2& size, const Color& color);
+	void _drawSquare(const GVec2f& pos, const GVec2f& size, const Color& color);
 	void _drawGameObject(const GameObject& gameObject);
 
 	const int _baseWindowWidth = 1920; // (Default value, not really used)
@@ -57,13 +53,13 @@ private:
 	const int _aspectRatioX = 16; // (Default value, not really used)
 	const int _aspectRatioY = 9; // (Default value, not really used)
 
-	Vector2Int _currentScreenSize{ 0, 0 };
-	Vector2Int _blackBorderSize{ 0, 0 };
-	Vector2Int _viewportAspectRatioSize{ 0, 0 };
-	Vector2 _viewportScale{ 0.0f, 0.0f };
+	GVec2i _currentScreenSize{ 0, 0 };
+	GVec2i _blackBorderSize{ 0, 0 };
+	GVec2i _viewportAspectRatioSize{ 0, 0 };
+	GVec2f _viewportScale{ 0.0f, 0.0f };
 	
 	const int _basePixelsPerUnit = 100; // (Default value, not really used)
-	Vector2 _scaledPixelsPerUnit{ 0, 0 }; // Using an float because we need precision on that value. Because even small roundings will stack up
+	GVec2f _scaledPixelsPerUnit{ 0, 0 }; // Using an float because we need precision on that value. Because even small roundings will stack up
 
 	RenderTexture2D _rendererResult; // This rendertexture is used, to store the renderresult in it, and then later drawing it on the screen
 	RenderTexture2D _renderTexA; // A and B are used to render stuff on each other, until e.g. all shaders are drawn

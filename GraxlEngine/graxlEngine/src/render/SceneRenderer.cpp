@@ -6,11 +6,11 @@
 #include <optional>
 
 namespace graxl {
-	SceneRenderer::SceneRenderer(Vector2 __aspectRatio, int __baseWidthPixels, int __basePixelsPerUnit)
-		: _aspectRatioX((int)__aspectRatio.x), _aspectRatioY((int)__aspectRatio.y), _basePixelsPerUnit(__basePixelsPerUnit),
+	SceneRenderer::SceneRenderer(GVec2i __aspectRatio, int __baseWidthPixels, int __basePixelsPerUnit)
+		: _aspectRatioX(__aspectRatio.x()), _aspectRatioY(__aspectRatio.y()), _basePixelsPerUnit(__basePixelsPerUnit),
 		_baseWindowWidth(__baseWidthPixels),
 		// Casting first to double for max presicion
-		_baseWindowHeight(static_cast<int>(static_cast<double>(__baseWidthPixels) / static_cast<double>(__aspectRatio.x) * static_cast<double>(__aspectRatio.y)))
+		_baseWindowHeight(static_cast<int>(static_cast<double>(__baseWidthPixels) / static_cast<double>(__aspectRatio.x()) * static_cast<double>(__aspectRatio.y())))
 	{
 		camera2d.offset = { 0.0f, 0.0f };
 		camera2d.rotation = 0.0f;
@@ -22,8 +22,8 @@ namespace graxl {
 	void SceneRenderer::renderSceneToRendererBuffer(const Scene& scene)
 	{
 		// Calculate all the scaling etc for the aspect ratio if needed
-		Vector2Int readedSize = { GetScreenWidth(), GetScreenHeight() };
-		if (readedSize.x != _currentScreenSize.x || readedSize.y != _currentScreenSize.y) _recalculateAspectRatio(readedSize);
+		GVec2i readedSize = { GetScreenWidth(), GetScreenHeight() };
+		if (readedSize.x() != _currentScreenSize.x() || readedSize.y() != _currentScreenSize.y()) _recalculateAspectRatio(readedSize);
 
 		// Draw the Background and GameObjects to A
 		BeginTextureMode(_renderTexA); // --- Rendering Base Scene ---
@@ -32,8 +32,8 @@ namespace graxl {
 		//DrawRectangle(_blackBorderSize.x / 2, _blackBorderSize.y / 2, _viewportAspectRatioSize.x, _viewportAspectRatioSize.y, GRAY); // Shows the viewport
 
 		// Set the camera pos to the center of the screen, and move the camera back, so it everything is centered again
-		camera2d.target = { (float)_viewportAspectRatioSize.x / 2.0f, (float)_viewportAspectRatioSize.y / 2.0f };
-		camera2d.offset = { (float)_viewportAspectRatioSize.x / 2.0f, (float)_viewportAspectRatioSize.y / 2.0f };
+		camera2d.target = { (float)_viewportAspectRatioSize.x() / 2.0f, (float)_viewportAspectRatioSize.y() / 2.0f };
+		camera2d.offset = { (float)_viewportAspectRatioSize.x() / 2.0f, (float)_viewportAspectRatioSize.y() / 2.0f };
 
 		// -- Render the GameObjects --
 
@@ -111,13 +111,13 @@ namespace graxl {
 
 		
 		// Draw the black borders (if there are any)
-		if (_blackBorderSize.x > 0) {
-			DrawRectangle(0, 0, _blackBorderSize.x / 2, _currentScreenSize.y, BLACK);
-			DrawRectangle(_currentScreenSize.x - (_blackBorderSize.x / 2), 0, _blackBorderSize.x / 2, _currentScreenSize.y, BLACK);
+		if (_blackBorderSize.x() > 0) {
+			DrawRectangle(0, 0, _blackBorderSize.x() / 2, _currentScreenSize.y(), BLACK);
+			DrawRectangle(_currentScreenSize.x() - (_blackBorderSize.x() / 2), 0, _blackBorderSize.x() / 2, _currentScreenSize.y(), BLACK);
 		}
-		if (_blackBorderSize.y > 0) {
-			DrawRectangle(0, 0, _currentScreenSize.x, _blackBorderSize.y / 2, BLACK);
-			DrawRectangle(0, _currentScreenSize.y - (_blackBorderSize.y / 2), _currentScreenSize.x, _blackBorderSize.y / 2, BLACK);
+		if (_blackBorderSize.y() > 0) {
+			DrawRectangle(0, 0, _currentScreenSize.x(), _blackBorderSize.y() / 2, BLACK);
+			DrawRectangle(0, _currentScreenSize.y() - (_blackBorderSize.y() / 2), _currentScreenSize.x(), _blackBorderSize.y() / 2, BLACK);
 		}
 
 	}
@@ -126,7 +126,7 @@ namespace graxl {
 	{
 		// Because we are in drawing mode in this function, we can just draw the result buffer to the screen
 		// (Using the _blackBorderSize offset, because the screen is maybe not the target aspect ratio, what ever other target resoulution)
-		DrawTexture(_rendererResult.texture, _blackBorderSize.x / 2, _blackBorderSize.y / 2, WHITE);
+		DrawTexture(_rendererResult.texture, _blackBorderSize.x() / 2, _blackBorderSize.y() / 2, WHITE);
 	}
 
 	void SceneRenderer::renderBlank()
@@ -147,19 +147,19 @@ namespace graxl {
 	}
 
 
-	void SceneRenderer::_recalculateAspectRatio(Vector2Int& newScreenSize)
+	void SceneRenderer::_recalculateAspectRatio(GVec2i& newScreenSize)
 	{
 		_currentScreenSize = newScreenSize;
 
 		// Calculate the black box
 		_blackBorderSize = _calcBlackBorderSize(newScreenSize);
 		// Calculate the size of the actual rendered gameplay area, aka. viewport
-		_viewportAspectRatioSize = { newScreenSize.x - _blackBorderSize.x, newScreenSize.y - _blackBorderSize.y }; // The size of the actual rendered gameplay
+		_viewportAspectRatioSize = { newScreenSize.x() - _blackBorderSize.x(), newScreenSize.y() - _blackBorderSize.y()}; // The size of the actual rendered gameplay
 		// Calc the scale factor for the game. If its larger than the base window size, or smaller. The scaling applies only the the viewport, not the whole window.
-		_viewportScale = { (float)_viewportAspectRatioSize.x / (float)_baseWindowWidth, (float)_viewportAspectRatioSize.y / (float)_baseWindowHeight };
+		_viewportScale = { (float)_viewportAspectRatioSize.x() / (float)_baseWindowWidth, (float)_viewportAspectRatioSize.y() / (float)_baseWindowHeight };
 
 		// Calc the new pixels per unit value
-		_scaledPixelsPerUnit = { _viewportScale.x * (float)_basePixelsPerUnit, _viewportScale.y * (float)_basePixelsPerUnit };
+		_scaledPixelsPerUnit = { _viewportScale.x() * (float)_basePixelsPerUnit, _viewportScale.y() * (float)_basePixelsPerUnit };
 
 
 		spdlog::info("SceneRenderer: Begin recreating renderTextures for rendering...");
@@ -170,9 +170,9 @@ namespace graxl {
 			UnloadRenderTexture(_renderTexB);
 		}
 		// Create/Load new rendertextures with the according viewport size
-		_rendererResult = LoadRenderTexture(_viewportAspectRatioSize.x, _viewportAspectRatioSize.y);
-		_renderTexA = LoadRenderTexture(_viewportAspectRatioSize.x, _viewportAspectRatioSize.y);
-		_renderTexB = LoadRenderTexture(_viewportAspectRatioSize.x, _viewportAspectRatioSize.y);
+		_rendererResult = LoadRenderTexture(_viewportAspectRatioSize.x(), _viewportAspectRatioSize.y());
+		_renderTexA = LoadRenderTexture(_viewportAspectRatioSize.x(), _viewportAspectRatioSize.y());
+		_renderTexB = LoadRenderTexture(_viewportAspectRatioSize.x(), _viewportAspectRatioSize.y());
 		spdlog::info("SceneRenderer: Recreating renderTextures done.");
 		// Setting the filters to POINT (So basically no filter)
 		SetTextureFilter(_rendererResult.texture, TEXTURE_FILTER_POINT);
@@ -181,37 +181,37 @@ namespace graxl {
 
 
 		spdlog::debug("SceneRenderer: Recalculated Aspect Ratio: Viewport({}, {}), Scale({}, {}), PixelsPerUnit({}, {})",
-			_viewportAspectRatioSize.x, _viewportAspectRatioSize.y, _viewportScale.x, _viewportScale.y, _scaledPixelsPerUnit.x, _scaledPixelsPerUnit.y);
+			_viewportAspectRatioSize.x(), _viewportAspectRatioSize.y(), _viewportScale.x(), _viewportScale.y(), _scaledPixelsPerUnit.x(), _scaledPixelsPerUnit.y());
 	}
 
 	// Returns the total size of the border. Example left + right border size together.
-	SceneRenderer::Vector2Int SceneRenderer::_calcBlackBorderSize(Vector2Int& windowSize) {
-		int subAspectRatioWidth = windowSize.x / _aspectRatioX;
-		int subAspectRatioHeight = windowSize.y / _aspectRatioY;
+	GVec2i SceneRenderer::_calcBlackBorderSize(GVec2i& windowSize) {
+		int subAspectRatioWidth = windowSize.x() / _aspectRatioX;
+		int subAspectRatioHeight = windowSize.y() / _aspectRatioY;
 
-		if (subAspectRatioWidth * _aspectRatioY <= windowSize.y) {
-			int blackBorderHeight = windowSize.y - (subAspectRatioWidth * _aspectRatioY);
+		if (subAspectRatioWidth * _aspectRatioY <= windowSize.y()) {
+			int blackBorderHeight = windowSize.y() - (subAspectRatioWidth * _aspectRatioY);
 			return { 0, blackBorderHeight };
 		}
 		else {
-			int blackBorderWidth = windowSize.x - (subAspectRatioHeight * _aspectRatioX);
+			int blackBorderWidth = windowSize.x() - (subAspectRatioHeight * _aspectRatioX);
 			return { blackBorderWidth, 0 };
 		}
 	}
 
-	SceneRenderer::Vector2Int SceneRenderer::_calcViewportPixelPos(const Vector2& pos, const Vector2Int& sizePixels)
+	GVec2i SceneRenderer::_calcViewportPixelPos(const GVec2f& pos, const GVec2i& sizePixels)
 	{
 		return {
-			(int)(pos.x * _scaledPixelsPerUnit.x),
-			-((int)(pos.y * _scaledPixelsPerUnit.y)) + _viewportAspectRatioSize.y - sizePixels.y
+			(int)(pos.x() * _scaledPixelsPerUnit.x()),
+			-((int)(pos.y() * _scaledPixelsPerUnit.y())) + _viewportAspectRatioSize.y() - sizePixels.y()
 		};
 	}
 
-	SceneRenderer::Vector2Int SceneRenderer::_calcViewportPixelSize(const Vector2& size)
+	GVec2i SceneRenderer::_calcViewportPixelSize(const GVec2f& size)
 	{
 		return {
-			(int)(size.x * _scaledPixelsPerUnit.x),
-			(int)(size.y * _scaledPixelsPerUnit.y)
+			(int)(size.x() * _scaledPixelsPerUnit.x()),
+			(int)(size.y() * _scaledPixelsPerUnit.y())
 		};
 	}
 
@@ -237,7 +237,7 @@ namespace graxl {
 
 		// Update static values set by the renderer
 		int shaderLocation_Resolution = GetShaderLocation(shaderRef, "resolution");
-		Vector2 resFloat = { (float)_viewportAspectRatioSize.x, (float)_viewportAspectRatioSize.y };
+		GVec2f resFloat = { (float)_viewportAspectRatioSize.x(), (float)_viewportAspectRatioSize.y()};
 		SetShaderValue(shaderRef, shaderLocation_Resolution, (const void*)&resFloat, ShaderUniformDataType::SHADER_UNIFORM_VEC2);
 
 		// Update the custom values, based on the amount of custom values the shader has
@@ -274,27 +274,27 @@ namespace graxl {
 		}			
 	}
 
-	void SceneRenderer::_drawSquare(const Vector2& pos, const Vector2& size, const Color& color)
+	void SceneRenderer::_drawSquare(const GVec2f& pos, const GVec2f& size, const Color& color)
 	{
-		Vector2Int windowPixelSize = _calcViewportPixelSize(size);
-		Vector2Int windowPixelPos = _calcViewportPixelPos(pos, windowPixelSize);
+		GVec2i windowPixelSize = _calcViewportPixelSize(size);
+		GVec2i windowPixelPos = _calcViewportPixelPos(pos, windowPixelSize);
 		
 
-		DrawRectangle(windowPixelPos.x, windowPixelPos.y, windowPixelSize.x, windowPixelSize.y, color);
+		DrawRectangle(windowPixelPos.x(), windowPixelPos.y(), windowPixelSize.x(), windowPixelSize.y(), color);
 	}
 
 	void SceneRenderer::_drawGameObject(const GameObject& gameObject)
 	{
 		// If the gameObjects texture is a nullptr/invalid, just draw a magenta box
 		if (const auto& tex = gameObject.texture.lock()) {
-			Vector2Int goSizePixels = _calcViewportPixelSize(gameObject.size);
-			Vector2Int drawPosPixels = _calcViewportPixelPos(gameObject.position, goSizePixels);
+			GVec2i goSizePixels = _calcViewportPixelSize(gameObject.size);
+			GVec2i drawPosPixels = _calcViewportPixelPos(gameObject.position, goSizePixels);
 
 			const Texture2D& drawTexture = tex->getTexture();
 			const Rectangle& drawTextureRect = tex->getTextureRect();
 
 			DrawTexturePro(drawTexture, drawTextureRect,
-				{ (float)drawPosPixels.x, (float)drawPosPixels.y, (float)goSizePixels.x, (float)goSizePixels.y }, { 0.0f, 0.0f },
+				{ (float)drawPosPixels.x(), (float)drawPosPixels.y(), (float)goSizePixels.x(), (float)goSizePixels.y()}, {0.0f, 0.0f},
 				0.0f, WHITE);
 		}
 		else {

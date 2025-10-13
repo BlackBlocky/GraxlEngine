@@ -13,7 +13,7 @@
 
 namespace graxl {
 
-	int CoreController::init(const std::string& windowTitle, Vector2 aspectRatio, int baseWindowWidthPixels, int pixelsPerUnit, int framerate, bool debugMode)
+	int CoreController::init(const std::string& windowTitle, GVec2i aspectRatio, int baseWindowWidthPixels, int pixelsPerUnit, int framerate, bool debugMode)
 	{
 		_debugMode = debugMode;
 
@@ -21,7 +21,7 @@ namespace graxl {
 		_sceneRenderer.emplace(aspectRatio, baseWindowWidthPixels, pixelsPerUnit);
 
 		spdlog::info("Init Graxl with title:{}, AspectRatio:{}/{}, BaseRes:{}/{}, PixelsPerUnity:{}, Framerate:{}, DebugMode:{}", 
-			windowTitle, (int)aspectRatio.x, (int)aspectRatio.y, _sceneRenderer->getBaseWindowWidth(), _sceneRenderer->getBaseWindowHeight(), pixelsPerUnit, framerate, debugMode);
+			windowTitle, aspectRatio.x(), aspectRatio.y(), _sceneRenderer->getBaseWindowWidth(), _sceneRenderer->getBaseWindowHeight(), pixelsPerUnit, framerate, debugMode);
 
 		// Init every system for the Engine
 		if (this->_initWindow(framerate, windowTitle, {(float)_sceneRenderer->getBaseWindowWidth(), (float)_sceneRenderer->getBaseWindowHeight()}) != 0) return 1;
@@ -32,7 +32,7 @@ namespace graxl {
 		return 0;
 	}
 
-	int CoreController::_initWindow(int framerate, const std::string& title, Vector2 res)
+	int CoreController::_initWindow(int framerate, const std::string& title, GVec2i res)
 	{
 		// Move Raylib logging to spdlog logging
 		SetTraceLogCallback(_raylibLogCallback);
@@ -41,7 +41,7 @@ namespace graxl {
 
 		SetConfigFlags(FLAG_WINDOW_RESIZABLE);
 
-		InitWindow((int)res.x, (int)res.y, title.c_str());
+		InitWindow(res.x(), res.y(), title.c_str());
 		SetTargetFPS(framerate);
 
 		_windowInitialized = true;
