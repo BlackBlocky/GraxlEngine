@@ -33,7 +33,7 @@ public:
 	std::weak_ptr<GameTexture> addTextureObject(const std::string& key, GameTexture&& texture);
 
 	// --- SHADER ---
-	const std::vector<std::weak_ptr<GameShader>> getShaderListSorted() const { return _sortedShaderList; };
+	const std::vector<std::weak_ptr<GameShader>>& getShaderListSorted() const { return _sortedShaderList; };
 	std::weak_ptr<GameShader> createSimpleShader(const std::string& key, const std::string& shaderName, GameShaderType shaderType);
 	std::weak_ptr<GameShader> createGlslShader(const std::string& key, const std::string& shaderName, const std::filesystem::path& path, int priority, int customValuesAmount);
 	std::weak_ptr<GameShader> getShaderByKey(const std::string& key);
