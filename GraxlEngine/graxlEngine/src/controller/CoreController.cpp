@@ -6,10 +6,12 @@
 #include <spdlog/spdlog.h>
 #include <imgui.h>
 #include <rlImGui.h>
+#include <magic_enum/magic_enum.hpp>
 
 #include <graxlEngine/render/GameShader.h>
 #include <graxlEngine/event/GuiShaderSwitchEvent.h>
 #include <graxlEngine/event/GameStateSwitchEvent.h>
+#include <graxlEngine/GraxlConstants.h>
 
 namespace graxl {
 
@@ -202,7 +204,8 @@ namespace graxl {
 			if(!_currentGameState.expired() && _currentGameState.lock()->doInput) _inputSystem->checkForInputs(dEventBuffer);
 
 			// Game Logic
-			_doTick(GetFrameTime(), dEventBuffer);
+			float deltaTime = GetFrameTime();
+			_doTick(deltaTime, dEventBuffer);
 
 			// Rendering
 			if(_currentScene != nullptr) _sceneRenderer->renderSceneToRendererBuffer(*_currentScene);
@@ -211,7 +214,7 @@ namespace graxl {
 			if (_currentScene != nullptr) _sceneRenderer->renderBufferToScreen();
 			else _sceneRenderer->renderBlank();
 
-			if (_debugMode && _imguiInitialized) _imGUITick(dEventBuffer);
+			if (_debugMode && _imguiInitialized) _imGUITick(dEventBuffer, deltaTime);
 		
 
 			EndDrawing();
@@ -295,6 +298,165 @@ namespace graxl {
 		}
 	}
 
+	void CoreController::_generateBasicInfoImGuiWindow(float dt, const DoubleEventBuffer& deb)
+	{
+		// Simple color switcher for better readability
+		ImVec4 switchingColor = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);
+		static auto colorSwitcherFunc = [&switchingColor] () {
+			if(switchingColor.x == 0.7f) {
+				switchingColor = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);
+			}
+			else {
+				switchingColor = ImVec4(0.7f, 0.7f, 0.9f, 1.0f);
+			}
+		};
+
+		// Helper function to draw a image
+		static auto drawImageFunc = [](const GameTexture& tex, int width, int height) {
+			ImVec2 imgSize = ImVec2(width, height);
+			ImGui::Image((void*)(intptr_t)tex.getTexture().id, imgSize);
+		};
+
+		// Rendering the ImGui window
+		ImGui::Begin("Graxel Engine Debug Window");
+
+		if (ImGui::Button("Toogle Debug Console")) {
+			if (_consoleInitialized) {
+				_consoleController->switchConsoleActive();
+			}
+		}
+
+		ImGui::Text("Current Game State: %s", (_currentGameState.expired()) ? "NOT ASSIGNED" : _currentGameState.lock()->id.c_str());
+		ImGui::Text("Current Frame Time: %.2f ms", GetFrameTime() * 1000.0f);
+		ImGui::Text("Current Frames per Second: %.2f", 1.0f / dt);
+		ImGui::Text("Runtime: %.2f", GetTime());
+
+		ImGui::Separator();
+
+		if (ImGui::CollapsingHeader(std::format("{} Registered Game States", GAME_STATES.size()).c_str())) {
+			switchingColor = ImVec4(1.8f, 1.0f, 1.0f, 1.0f);
+			for (const auto& state : GAME_STATES) {
+				ImGui::TextColored(switchingColor, "GameState ID: \"%s\"\n-> doRender: %s\n-> doInput: %s\n-> Has Update Function: %s\n-> Has onEnterState Function: %s\n-> Has onLeaveState Function: %s",
+					state.second->id.c_str(),
+					(state.second->doRender) ? "true" : "false",
+					(state.second->doInput) ? "true" : "false",
+					(state.second->updateFunction != nullptr) ? "true" : "false",
+					(state.second->onEnterState != nullptr) ? "true" : "false",
+					(state.second->onLeaveState != nullptr) ? "true" : "false"
+				);
+
+				ImGui::PushID(std::format("switch state {}", state.second->id).c_str());
+				if (ImGui::Button("Swtich to")) {
+					deb.pushEvent(std::make_shared<GameStateSwitchEvent>("CoreController.cpp/GeneralImGuiWindow", state.second->id));
+				}
+				ImGui::PopID();
+
+				ImGui::Separator();
+				colorSwitcherFunc();
+			}
+		}
+
+		ImGui::Separator();
+		
+		if (ImGui::CollapsingHeader(std::format("{} Registered Scene Definitions", _sceneDefs.size()).c_str())) {
+			switchingColor = ImVec4(1.8f, 1.0f, 1.0f, 1.0f);
+			for (const auto& scene : _sceneDefs) {
+				ImGui::TextColored(switchingColor, "Scene ID: \"%s\"\n-> Scene Name: \"%s\"\n-> Has build function: %s",
+					scene.second.sceneId.c_str(),
+					scene.second.sceneName.c_str(),
+					(scene.second.haveBuildFunction()) ? "true" : "false"
+				);
+
+				ImGui::PushID(std::format("build and switch to scene {}", scene.second.sceneId).c_str());
+				if(ImGui::Button("Build and Switch to")) {
+					buildAndSwitchToScene(scene.second.sceneId);
+				}
+				ImGui::PopID();
+
+				ImGui::Separator();
+				colorSwitcherFunc();
+			}
+		}
+
+		ImGui::Separator();
+
+		if (ImGui::CollapsingHeader("Current Scene Info")) {
+			if (_currentScene != nullptr) {
+				ImGui::Text("Scene Name: %s", _currentScene->sceneName.c_str());
+				ImGui::Text("Scene ID: %s", _currentScene->sceneId.c_str());
+			
+				const auto& textures = _currentScene->getAllTexturesMap();
+				const auto& shaders = _currentScene->getAllShadersMap();
+				const auto& gameObjects = _currentScene->getAllGameObjects();
+				if (ImGui::CollapsingHeader(std::format("{} textures loaded", textures.size()).c_str())) {
+					switchingColor = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);
+					for (const std::pair<std::string, std::shared_ptr<GameTexture>>& tex : textures) {
+						// Draw the texture
+						drawImageFunc(*tex.second, 64, 64);
+
+						// Draw the text
+						ImVec2 originalCursorPos = ImGui::GetCursorPos();
+						ImGui::SetCursorPos(ImVec2(80, originalCursorPos.y - 64));
+						ImGui::TextColored(switchingColor, "Key: \"%s\"\n-> Name: \"%s\"\n-> Size: %.0fx%.0f",
+							tex.first.c_str(), tex.second->name.c_str(), tex.second->getTextureRect().width, tex.second->getTextureRect().height);
+						ImGui::SetCursorPos(originalCursorPos);
+
+						// Seperator and color switch for the next element
+						ImGui::Separator();
+						colorSwitcherFunc();
+					}
+				}
+				if (ImGui::CollapsingHeader(std::format("{} shaders loaded", shaders.size()).c_str())) {
+					switchingColor = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);
+					for (const std::pair<std::string, std::shared_ptr<GameShader>>& shader : shaders) {
+						ImGui::TextColored(switchingColor, "Key: \"%s\"\n-> Name: \"%s\"\n-> Type: %s\n-> Priority: %d\n-> cValuesAmount: %d",
+							shader.first.c_str(), shader.second->getName().c_str(), magic_enum::enum_name(shader.second->getType()).data(),
+							shader.second->getPriority(), shader.second->getCustomValuesAmount());
+
+						ImGui::PushID(std::string("open shader " + shader.second->getName()).c_str());
+						if (ImGui::Button("Show")) {
+							deb.pushEvent(std::make_shared<GuiShaderSwitchEvent>("CotrController.cpp/GeneralImGuiWindow", shader.second->getName(), false));
+						}
+						ImGui::PopID();
+						ImGui::SameLine();
+						ImGui::PushID(std::string("close shader " + shader.second->getName()).c_str());
+						if (ImGui::Button("Hide")) {
+							deb.pushEvent(std::make_shared<GuiShaderSwitchEvent>("CotrController.cpp/GeneralImGuiWindow", shader.second->getName(), true));
+						}
+						ImGui::PopID();
+
+						ImGui::Separator();
+						colorSwitcherFunc();
+					}
+				}
+				if (ImGui::CollapsingHeader(std::format("{} gameObjects initiated", gameObjects.size()).c_str())) {
+					switchingColor = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);
+					for (const std::shared_ptr<GameObject>& go : gameObjects) {
+						drawImageFunc(*go->texture.lock(), 70, 70);
+
+						ImVec2 originalCursorPos = ImGui::GetCursorPos();
+						ImGui::SetCursorPos(ImVec2(86, originalCursorPos.y - 70));
+						ImGui::TextColored(switchingColor, "Name: \"%s\"\n-> Pos: %s\n-> Size: %s\n-> DrawOrder: %d\n-> Texture: \"%s\"",
+							go->name.c_str(), go->position.string().c_str(), go->size.string().c_str(), go->drawOrder, go->texture.lock()->name.c_str());
+						ImGui::SetCursorPos(originalCursorPos);
+
+						ImGui::Separator();
+						colorSwitcherFunc();
+					}
+				}
+			}
+			else ImGui::Text("No Scene loaded.");
+		}
+
+		ImGui::Separator();
+		ImGui::Separator();
+
+		ImGui::TextDisabled("Graxl Engine %s", info::GRAXL_ENGINE_VERSION);
+		ImGui::TextDisabled("Developed by BlackBlocky");
+
+		ImGui::End();
+	}
+
 	// Swaps the current and next event buffer, and clears all processed events
 	// Also returns a DoubleEventBuffer that contains the current and next event buffer
 	DoubleEventBuffer CoreController::_createDoubleEventBuffer()
@@ -329,22 +491,11 @@ namespace graxl {
 		_currentGameState.lock()->updateFunction(*this, dt);
 	}
 
-	void CoreController::_imGUITick(const DoubleEventBuffer& doubleEventBuffer)
+	void CoreController::_imGUITick(const DoubleEventBuffer& doubleEventBuffer, float dt)
 	{
 		rlImGuiBegin();
 
-		ImGui::Begin("Grash yayy");
-		ImGui::Text("This is a cool imGui window.");
-		if (ImGui::Button("Write something in the console")) {
-			spdlog::debug("CoreController: Button clicked in ImGui window.");
-		}
-
-		if (ImGui::CollapsingHeader("More")) {
-			ImGui::Text("Current Game State: %s", (_currentGameState.expired()) ? "NOT ASSIGNED" : _currentGameState.lock()->id.c_str());
-			ImGui::Text("Current Frame Time: %.2f ms", GetFrameTime() * 1000.0f);
-		}
-
-		ImGui::End();
+		_generateBasicInfoImGuiWindow(dt, doubleEventBuffer);
 
 		// Console
 		if (_consoleInitialized && _consoleController->isConsoleActive()) {

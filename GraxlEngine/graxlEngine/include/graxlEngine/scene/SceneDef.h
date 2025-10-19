@@ -22,6 +22,10 @@ namespace graxl {
 		const std::string sceneId;
 		const std::string sceneName;
 
+		bool haveBuildFunction() const {
+			return _buildFunc != nullptr;
+		}
+
 	private:
 		std::function<void(Scene& scene)> _buildFunc;
 

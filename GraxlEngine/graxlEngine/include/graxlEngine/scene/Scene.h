@@ -31,12 +31,14 @@ public:
 	std::weak_ptr<GameTexture> loadTexture(const std::string& key, const std::filesystem::path& path, const std::string& name);
 	// Will take the Textures ownership and moves it into the scene
 	std::weak_ptr<GameTexture> addTextureObject(const std::string& key, GameTexture&& texture);
+	const std::unordered_map<std::string, std::shared_ptr<GameTexture>>& getAllTexturesMap() const { return _texturesMap; };
 
 	// --- SHADER ---
 	const std::vector<std::weak_ptr<GameShader>>& getShaderListSorted() const { return _sortedShaderList; };
 	std::weak_ptr<GameShader> createSimpleShader(const std::string& key, const std::string& shaderName, GameShaderType shaderType);
 	std::weak_ptr<GameShader> createGlslShader(const std::string& key, const std::string& shaderName, const std::filesystem::path& path, int priority, int customValuesAmount);
 	std::weak_ptr<GameShader> getShaderByKey(const std::string& key);
+	const std::unordered_map<std::string, std::shared_ptr<GameShader>>& getAllShadersMap() const { return _shadersMap; };
 
 	// --- GAME OBJECT ---
 	std::weak_ptr<GameObject> getGameObjectByName(const std::string& name);
@@ -48,6 +50,7 @@ public:
 	// The function will instantly remove this GameObject from the _gameObjects vector
 	void destroyGameObject(std::weak_ptr<GameObject>& gameObject);
 	const std::vector<std::shared_ptr<GameObject>>& getAllGameObjects() { return _gameObjects; };
+	// (Expensive: Needs to create a new vector)
 	const std::vector<std::weak_ptr<const GameObject>> getAllGameObjectsConst() const;
 
 	// Unload all resources, that are connected to this scene, like shaders

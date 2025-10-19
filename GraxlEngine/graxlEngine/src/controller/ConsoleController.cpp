@@ -1,6 +1,7 @@
 #include "graxlEngine/controller/ConsoleController.h"
 
 #include <memory>
+#include <format>
 
 #include <imgui.h>
 #include <spdlog/spdlog.h>
@@ -9,19 +10,20 @@
 #include "graxlEngine/event/GameStateSwitchEvent.h"
 
 #include "graxlEngine/controller/CoreController.h"
+#include <graxlEngine/GraxlConstants.h>
 
 namespace graxl {
 
 ConsoleController::ConsoleController(CoreController& coreControllerRef) : _coreControllerRef(coreControllerRef)
 {
     // Just add a "header"
-    _consoleLogs.push_back("++++ Grash Console ++++");
+    _consoleLogs.push_back("++++ Graxl Console ++++");
     _consoleLogs.push_back("Console initialized. Type 'help' for commands.");
 }
 
 void ConsoleController::consoleImGuiUpdate(const DoubleEventBuffer& doubleEventBuffer)
 {
-    ImGui::Begin("Grash Console");
+    ImGui::Begin("Graxl Debug Console");
 
     // Console scroll view
     ImGui::BeginChild("ScrollingRegion", ImVec2(0, -ImGui::GetFrameHeightWithSpacing()), false, ImGuiWindowFlags_HorizontalScrollbar);
@@ -75,7 +77,7 @@ void ConsoleController::processCommand(std::string command, const DoubleEventBuf
     }
 
     else if (command.starts_with("about")) {
-        _consoleLogs.push_back("GrashCpp. Made by BlackBlocky in 2025!");
+        _consoleLogs.push_back(std::format("Graxl. A game engine written by BlackBlocky.\n- Current version: {}", info::GRAXL_ENGINE_VERSION));
 
         spdlog::info("ConsoleController: Console command 'about' executed.");
     }

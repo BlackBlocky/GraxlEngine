@@ -92,10 +92,11 @@ private:
 
 	// Intern methods
 	void _doTick(float dt, const DoubleEventBuffer& dEventBuffer);
-	void _imGUITick(const DoubleEventBuffer& doubleEventBuffer);
+	void _imGUITick(const DoubleEventBuffer& doubleEventBuffer, float dt);
 	void _stopGame();
 
 	void _processEvents(const DoubleEventBuffer& dEventBuffer);
+	void _generateBasicInfoImGuiWindow(float dt, const DoubleEventBuffer& deb);
 
 	static void _raylibLogCallback(int msgType, const char* text, va_list args);
 
