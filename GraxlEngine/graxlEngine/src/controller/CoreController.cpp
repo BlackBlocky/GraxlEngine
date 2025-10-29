@@ -186,19 +186,16 @@ namespace graxl {
 
 		__raylibInfoLogToDebug = true; // Used by the _raylibLogCallback Method
 
+		// Create the doubleEventBuffer
+		DoubleEventBuffer dEventBuffer = DoubleEventBuffer(&_eventBufferA, &_eventBufferB);
+
+		dEventBuffer.pushEvent(std::make_shared<GameStateSwitchEvent>("CoreController.cpp", startingState));
+
 		// Here is the actual game loop
 		spdlog::info("CoreController: Starting game loop...");
 		_gameLoopInitialized = true;
-		bool __startingGameStateEventAlreadyPushed = false;
 		while (!WindowShouldClose()) {
-			const DoubleEventBuffer dEventBuffer = _createDoubleEventBuffer();
-
-			if (!__startingGameStateEventAlreadyPushed && _currentGameState.expired()) {
-				// When we are not in a GameState, we just trying to get into the startingState
-				spdlog::info("CoreController: Pushing switch to startingState into eventBuffer...");
-				dEventBuffer.pushEvent(std::make_shared<GameStateSwitchEvent>("CoreController.cpp", startingState));
-				__startingGameStateEventAlreadyPushed = true;			
-			}
+			dEventBuffer.swapAndClearBuffers();
 
 			// Input handling
 			if(!_currentGameState.expired() && _currentGameState.lock()->doInput) _inputSystem->checkForInputs(dEventBuffer);
@@ -236,7 +233,7 @@ namespace graxl {
 
 	void CoreController::_processEvents(const DoubleEventBuffer& dEventBuffer)
 	{
-		for (const auto& event : *dEventBuffer.currentEventBuffer) {
+		for (const auto& event : dEventBuffer.getCurrentEventBuffer()) {
 
 			// Game Key Event handling (Console open/close)
 			if (event->type == EventType::KeyInputEvent) {
@@ -455,30 +452,6 @@ namespace graxl {
 		ImGui::TextDisabled("Developed by BlackBlocky");
 
 		ImGui::End();
-	}
-
-	// Swaps the current and next event buffer, and clears all processed events
-	// Also returns a DoubleEventBuffer that contains the current and next event buffer
-	DoubleEventBuffer CoreController::_createDoubleEventBuffer()
-	{
-		// Manage event buffers
-		const std::vector<std::shared_ptr<const GameEvent>>* currentEventBuffer = nullptr;
-		std::vector<std::shared_ptr<const GameEvent>>* nextEventBuffer = nullptr;
-		if (!_isSecondEventCycle) {
-			currentEventBuffer = &_eventBufferA;
-
-			nextEventBuffer = &_eventBufferB;
-			nextEventBuffer->clear();
-		}
-		else {
-			currentEventBuffer = &_eventBufferB;
-
-			nextEventBuffer = &_eventBufferA;
-			nextEventBuffer->clear();
-		}
-		_isSecondEventCycle = !_isSecondEventCycle;
-
-		return DoubleEventBuffer(currentEventBuffer, nextEventBuffer);
 	}
 
 	void CoreController::_doTick(float dt, const DoubleEventBuffer& dEventBuffer)

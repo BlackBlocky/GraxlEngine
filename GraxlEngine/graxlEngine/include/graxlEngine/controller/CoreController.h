@@ -78,7 +78,6 @@ private:
 
 	bool _debugMode = false;
 
-	DoubleEventBuffer _createDoubleEventBuffer();
 	std::vector<std::shared_ptr<const GameEvent>> _eventBufferA;
 	std::vector<std::shared_ptr<const GameEvent>> _eventBufferB;
 	bool _isSecondEventCycle = false;
