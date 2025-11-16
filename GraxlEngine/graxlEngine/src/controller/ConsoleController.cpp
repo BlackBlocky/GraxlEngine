@@ -6,7 +6,7 @@
 #include <imgui.h>
 #include <spdlog/spdlog.h>
 
-#include "graxlEngine/event/GuiShaderSwitchEvent.h"
+#include "graxlEngine/event/GuiSwitchSceneElementDebugWindow.h"
 #include "graxlEngine/event/GameStateSwitchEvent.h"
 
 #include "graxlEngine/controller/CoreController.h"
@@ -90,11 +90,24 @@ void ConsoleController::processCommand(std::string command, const DoubleEventBuf
 
 			if (guiCommand.length() >= 7+1 && guiCommand.starts_with("shader ")) {
 				guiCommand = guiCommand.substr(7); // Get the part after "shader "
-                doubleEventBuffer.pushEvent(std::make_shared<GuiShaderSwitchEvent>(GuiShaderSwitchEvent("ConsoleController.cpp", guiCommand, false)));
+                doubleEventBuffer.pushEvent(
+                    std::make_shared<GuiSwitchSceneElementDebugWindow>(
+                        GuiSwitchSceneElementDebugWindow("ConsoleController.cpp", GuiSwitchSceneElementDebugWindow::DebugWindowElement::Shader, guiCommand, false)
+                    )
+                );
 
                 _consoleLogs.push_back("Open shader GUI: " + guiCommand);
 				spdlog::info("ConsoleController: Open shader GUI command executed for shader: {}", guiCommand);
 			}
+            else if (guiCommand.length() >= 8+1 && guiCommand.starts_with("texture ")) {
+				guiCommand = guiCommand.substr(8); // Get the part after "texture "
+                doubleEventBuffer.pushEvent(
+                    std::make_shared<GuiSwitchSceneElementDebugWindow>(
+                        GuiSwitchSceneElementDebugWindow("ConsoleController.cpp", GuiSwitchSceneElementDebugWindow::DebugWindowElement::Texture, guiCommand, false)
+                    )
+                );
+				_consoleLogs.push_back("Open texture GUI: " + guiCommand);
+            }
             else {
 				_consoleLogs.push_back("Unkown gui shader command!");
 				spdlog::info("ConsoleController: Unknown gui command entered in console: {}", command);
@@ -105,11 +118,24 @@ void ConsoleController::processCommand(std::string command, const DoubleEventBuf
 
 			if (guiCommand.length() >= 7+1 && guiCommand.starts_with("shader ")) {
 				guiCommand = guiCommand.substr(7); // Get the part after "shader "
-                doubleEventBuffer.pushEvent(std::make_shared<GuiShaderSwitchEvent>(GuiShaderSwitchEvent("ConsoleController.cpp", guiCommand, true)));
+                doubleEventBuffer.pushEvent(
+                    std::make_shared<GuiSwitchSceneElementDebugWindow>(
+                        GuiSwitchSceneElementDebugWindow("ConsoleController.cpp", GuiSwitchSceneElementDebugWindow::DebugWindowElement::Shader, guiCommand, true)
+                    )
+                );
 
                 _consoleLogs.push_back("Close shader GUI: " + guiCommand);
 				spdlog::info("ConsoleController: Close shader GUI command executed for shader: {}", guiCommand);
 			}
+            else if (guiCommand.length() >= 8 + 1 && guiCommand.starts_with("texture ")) {
+                guiCommand = guiCommand.substr(8); // Get the part after "texture "
+                doubleEventBuffer.pushEvent(
+                    std::make_shared<GuiSwitchSceneElementDebugWindow>(
+                        GuiSwitchSceneElementDebugWindow("ConsoleController.cpp", GuiSwitchSceneElementDebugWindow::DebugWindowElement::Texture, guiCommand, true)
+                    )
+                );
+                _consoleLogs.push_back("Open texture GUI: " + guiCommand);
+            }
             else {
 				_consoleLogs.push_back("Unkown gui shader command!");
 				spdlog::info("ConsoleController: Unknown gui command entered in console: {}", command);

@@ -9,7 +9,7 @@
 #include <magic_enum/magic_enum.hpp>
 
 #include <graxlEngine/render/GameShader.h>
-#include <graxlEngine/event/GuiShaderSwitchEvent.h>
+#include <graxlEngine/event/GuiSwitchSceneElementDebugWindow.h>
 #include <graxlEngine/event/GameStateSwitchEvent.h>
 #include <graxlEngine/GraxlConstants.h>
 
@@ -250,41 +250,69 @@ namespace graxl {
 				}
 			}
 
-			// Gui Shader Switch Event handling
-			else if (_imguiInitialized && event->type == EventType::GuiShaderSwitchEvent) {
-				const GuiShaderSwitchEvent* guiShaderSwitchEvent = dynamic_cast<const GuiShaderSwitchEvent*>(event.get());
+			// Gui Scene Element Debug Window Switch Event handling
+			else if (_imguiInitialized && event->type == EventType::GuiSceneElementDebugWindowSwitch) {
+				const GuiSwitchSceneElementDebugWindow* guiElementSwitchEvent = dynamic_cast<const GuiSwitchSceneElementDebugWindow*>(event.get());
 
-				spdlog::trace("CoreController: GuiShaderSwitchEvent received: targetShaderName='{}', shaderShouldClose={}",
-					guiShaderSwitchEvent->targetShaderName, guiShaderSwitchEvent->shaderShouldClose);
+				spdlog::trace("CoreController: GuiSwitchSceneElementDebugWindow received: targetShaderName='{}', shaderShouldClose={}",
+					guiElementSwitchEvent->targetId, guiElementSwitchEvent->shouldClose);
 
-				// Get shader from current scene by name
+				// Get Element from current scene by name
 				if (_currentScene == nullptr) {
-					spdlog::warn("CoreController: Tried to switch gui for shader {}, but the current scene is null", guiShaderSwitchEvent->targetShaderName);
-					return;
-				}
-				const auto& currentShaders = _currentScene->getShaderListSorted();
-				if (currentShaders.empty()) {
-					spdlog::warn("CoreController: Tired to switch gui for shader {}, but there are no shaders registed in scene {}", guiShaderSwitchEvent->targetShaderName, _currentScene->sceneName);
+					spdlog::warn("CoreController: Tried to switch gui for shader {}, but the current scene is null", guiElementSwitchEvent->targetId);
 					return;
 				}
 
-				const auto targetShaderIt = std::find_if(currentShaders.begin(), currentShaders.end(),
-					[&guiShaderSwitchEvent](const std::weak_ptr<GameShader>& if_shader) {
-						return if_shader.lock()->getName() == guiShaderSwitchEvent->targetShaderName;
+				// Shader Element
+				if (guiElementSwitchEvent->element == GuiSwitchSceneElementDebugWindow::DebugWindowElement::Shader) {		
+					const auto& currentShaders = _currentScene->getShaderListSorted();
+					if (currentShaders.empty()) {
+						spdlog::warn("CoreController: Tired to switch gui for shader {}, but there are no shaders registed in scene {}", guiElementSwitchEvent->targetId, _currentScene->sceneName);
+						return;
 					}
-				);
 
-				if (targetShaderIt != currentShaders.end()) {
-					if (!guiShaderSwitchEvent->shaderShouldClose) {
-						_imguiObjectRenderer->addShaderToRenderList(*targetShaderIt);
+					const auto targetShaderIt = std::find_if(currentShaders.begin(), currentShaders.end(),
+						[&guiElementSwitchEvent](const std::weak_ptr<GameShader>& if_shader) {
+							return if_shader.lock()->getName() == guiElementSwitchEvent->targetId;
+						}
+					);
+
+					if (targetShaderIt != currentShaders.end()) {
+						if (!guiElementSwitchEvent->shouldClose) {
+							_imguiObjectRenderer->addShaderToRenderList(*targetShaderIt);
+						}
+						else
+						{
+							_imguiObjectRenderer->removeShaderToRenderList(*targetShaderIt);
+						}
 					}
-					else
-					{
-						_imguiObjectRenderer->removeShaderToRenderList(*targetShaderIt);
+					else {
+						spdlog::warn("CoreController: Tried to enable gui for shader \"{}\", but it doesnt exist or isn't loaded in the current scene.", guiElementSwitchEvent->targetId);
 					}
 				}
-				else {
-					spdlog::warn("CoreController: Tried to enable gui for shader \"{}\", but it doesnt exist or isn't loaded in the current scene.", guiShaderSwitchEvent->targetShaderName);
+
+				// Texture Element
+				else if (guiElementSwitchEvent->element == GuiSwitchSceneElementDebugWindow::DebugWindowElement::Texture) {
+					const auto& currentTextures = _currentScene->getAllTexturesMap();
+					if (currentTextures.empty()) {
+						spdlog::warn("CoreController: Tired to switch gui for texture {}, but there are no textures registed in scene {}", guiElementSwitchEvent->targetId, _currentScene->sceneName);
+						return;
+					}
+
+					const auto targetTextureIt = currentTextures.find(guiElementSwitchEvent->targetId);
+
+					if (targetTextureIt != currentTextures.end()) {
+						if (!guiElementSwitchEvent->shouldClose) {
+							_imguiObjectRenderer->addTextureToRenderList(targetTextureIt->second);
+						}
+						else
+						{
+							_imguiObjectRenderer->removeTextureToRenderList(targetTextureIt->second);
+						}
+					}
+					else {
+						spdlog::warn("CoreController: Tried to enable gui for texture \"{}\", but it doesnt exist or isn't loaded in the current scene.", guiElementSwitchEvent->targetId);
+					}
 				}
 			}
 
@@ -401,6 +429,28 @@ namespace graxl {
 							tex.first.c_str(), tex.second->name.c_str(), tex.second->getTextureRect().width, tex.second->getTextureRect().height);
 						ImGui::SetCursorPos(originalCursorPos);
 
+						ImGui::Separator();
+
+						ImGui::PushID(("open texture " + tex.second->name).c_str());
+						if (ImGui::Button("Show")) {
+							deb.pushEvent(
+								std::make_shared<GuiSwitchSceneElementDebugWindow>(
+									GuiSwitchSceneElementDebugWindow("ConsoleController.cpp", GuiSwitchSceneElementDebugWindow::DebugWindowElement::Texture, tex.first, false)
+								)
+							);
+						}
+						ImGui::PopID();
+						ImGui::SameLine();
+						ImGui::PushID(("close texture " + tex.second->name).c_str());
+						if (ImGui::Button("Hide")) {
+							deb.pushEvent(
+								std::make_shared<GuiSwitchSceneElementDebugWindow>(
+									GuiSwitchSceneElementDebugWindow("ConsoleController.cpp", GuiSwitchSceneElementDebugWindow::DebugWindowElement::Texture, tex.first, true)
+								)
+							);
+						}	
+						ImGui::PopID();
+
 						// Seperator and color switch for the next element
 						ImGui::Separator();
 						colorSwitcherFunc();
@@ -415,13 +465,21 @@ namespace graxl {
 
 						ImGui::PushID(std::string("open shader " + shader.second->getName()).c_str());
 						if (ImGui::Button("Show")) {
-							deb.pushEvent(std::make_shared<GuiShaderSwitchEvent>("CotrController.cpp/GeneralImGuiWindow", shader.second->getName(), false));
+							deb.pushEvent(
+								std::make_shared<GuiSwitchSceneElementDebugWindow>(
+									GuiSwitchSceneElementDebugWindow("ConsoleController.cpp", GuiSwitchSceneElementDebugWindow::DebugWindowElement::Shader, shader.second->getName(), false)
+								)
+							);
 						}
 						ImGui::PopID();
 						ImGui::SameLine();
 						ImGui::PushID(std::string("close shader " + shader.second->getName()).c_str());
 						if (ImGui::Button("Hide")) {
-							deb.pushEvent(std::make_shared<GuiShaderSwitchEvent>("CotrController.cpp/GeneralImGuiWindow", shader.second->getName(), true));
+							deb.pushEvent(
+								std::make_shared<GuiSwitchSceneElementDebugWindow>(
+									GuiSwitchSceneElementDebugWindow("ConsoleController.cpp", GuiSwitchSceneElementDebugWindow::DebugWindowElement::Shader, shader.second->getName(), true)
+								)
+							);
 						}
 						ImGui::PopID();
 

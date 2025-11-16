@@ -7,7 +7,7 @@ namespace graxl {
 enum class EventType {
 	KeyInputEvent, // GameKeyEvent
 	
-	GuiShaderSwitchEvent, // GuiShaderSwitchEvent
+	GuiSceneElementDebugWindowSwitch, // Gui Scene Element Debug Window Swtich
 
 	GameStateSwitch, // Event to switch Game States
 };
